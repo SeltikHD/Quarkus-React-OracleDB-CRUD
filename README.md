@@ -36,8 +36,8 @@ This project follows **Hexagonal Architecture (Ports & Adapters)** to ensure str
 
 ### Backend
 
-- **Framework**: Quarkus 3.8 LTS
-- **Language**: Java 17
+- **Framework**: Quarkus 3.31.2 LTS
+- **Language**: Java 21
 - **Database**: Oracle Database 19c
 - **API Documentation**: OpenAPI / Swagger (SmallRye)
 - **Testing**: JUnit 5, Mockito, RestAssured
@@ -45,7 +45,7 @@ This project follows **Hexagonal Architecture (Ports & Adapters)** to ensure str
 
 ### Frontend
 
-- **Framework**: React 18 (Vite)
+- **Framework**: React 19 (Vite)
 - **State Management**: Redux Toolkit
 - **UI Library**: Material UI (MUI) v5
 - **Testing**: Cypress (E2E)
@@ -92,9 +92,9 @@ autoflex-erp/
 
 ### Prerequisites
 
-- **Java 17+** (Temurin/OpenJDK recommended)
+- **Java 21+** (Temurin/OpenJDK recommended)
 - **Maven 3.9+**
-- **Node.js 18+**
+- **Bun 1.3.5+**
 - **Docker** (for containerized development)
 - **Oracle Database** (or use H2 for testing)
 
@@ -103,7 +103,7 @@ autoflex-erp/
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/autoflex-erp.git
+   git clone https://github.com/SeltikHD/autoflex-erp.git
    cd autoflex-erp
    ```
 
@@ -111,17 +111,17 @@ autoflex-erp/
 
    ```bash
    # Root (Husky)
-   npm install
+   bun install
    
    # Frontend
-   cd frontend && npm install
+   cd frontend && bun install
    ```
 
 3. **Start the backend:**
 
    ```bash
    cd backend
-   ./mvnw quarkus:dev
+   mvn quarkus:dev
    ```
 
    API available at: <http://localhost:8080/swagger-ui>
@@ -130,7 +130,7 @@ autoflex-erp/
 
    ```bash
    cd frontend
-   npm run dev
+   bun run dev
    ```
 
    App available at: <http://localhost:5173>
@@ -142,7 +142,7 @@ autoflex-erp/
 cd backend && mvn test
 
 # Frontend E2E tests
-cd frontend && npm run test:e2e
+cd frontend && bun run test:e2e
 ```
 
 ## 🔐 Oracle Wallet Configuration (Production)
