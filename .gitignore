@@ -1,0 +1,131 @@
+# =============================================================================
+# GITIGNORE - AUTOFLEX MONOREPO
+# =============================================================================
+# Comprehensive .gitignore for Java/Quarkus backend and React/TypeScript frontend
+# =============================================================================
+
+# =============================================================================
+# GENERAL
+# =============================================================================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# IDE and Editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+.history/
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.*.local
+*.env
+
+# =============================================================================
+# JAVA / MAVEN / QUARKUS (Backend)
+# =============================================================================
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/*.class
+
+# Maven
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/pom.xml.tag
+backend/pom.xml.releaseBackup
+backend/pom.xml.versionsBackup
+backend/pom.xml.next
+backend/release.properties
+
+# Quarkus
+backend/.quarkus/
+
+# Oracle Wallet (NEVER commit wallet files - they contain credentials)
+backend/**/wallet/
+backend/**/*.sso
+backend/**/*.p12
+backend/**/cwallet.*
+backend/**/tnsnames.ora
+backend/**/sqlnet.ora
+
+# Build outputs
+backend/build/
+backend/out/
+
+# Test outputs
+backend/test-output/
+backend/hs_err_pid*
+
+# =============================================================================
+# NODE.JS / NPM / REACT (Frontend)
+# =============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.cache/
+
+# NPM
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.npm/
+frontend/.yarn/
+
+# TypeScript
+frontend/*.tsbuildinfo
+
+# Vite
+frontend/.vite/
+
+# Testing
+frontend/coverage/
+frontend/cypress/videos/
+frontend/cypress/screenshots/
+frontend/.nyc_output/
+
+# =============================================================================
+# ROOT LEVEL
+# =============================================================================
+node_modules/
+*.log
+
+# Husky
+.husky/_/
+
+# Docker
+*.tar
+
+# Secrets (never commit these)
+secrets/
+*.pem
+*.key
+*.crt
+wallet*.zip
+wallet_base64.txt
+
+# Terraform state (if using IaC)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Backup files
+*.bak
+*.backup

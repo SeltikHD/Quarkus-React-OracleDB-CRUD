@@ -1,0 +1,89 @@
+# =============================================================================
+# AUTOFLEX BACKEND - MULTI-STAGE DOCKERFILE (JVM MODE)
+# =============================================================================
+# Optimized for Render.com deployment with Oracle Wallet support.
+#
+# Build stages:
+#   1. maven-build: Compiles the application and creates Quarkus fast-jar
+#   2. runtime: Minimal JRE image with entrypoint for Oracle Wallet handling
+#
+# Build command:
+#   docker build -f docker/Dockerfile.jvm -t autoflex-backend:latest .
+#
+# Run command (local):
+#   docker run -p 8080:8080 -e ORACLE_USER=user -e ORACLE_PASSWORD=pass autoflex-backend:latest
+#
+# Render.com will automatically detect this Dockerfile and build the image.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STAGE 1: BUILD
+# -----------------------------------------------------------------------------
+FROM eclipse-temurin:17-jdk-alpine AS maven-build
+
+# Install Maven
+RUN apk add --no-cache maven
+
+WORKDIR /build
+
+# Copy only POM first for better layer caching
+COPY pom.xml .
+
+# Download dependencies (cached unless pom.xml changes)
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application (skip tests - they run in CI)
+# Using fast-jar packaging for optimal startup time
+RUN mvn package -DskipTests -Dquarkus.package.type=fast-jar
+
+# -----------------------------------------------------------------------------
+# STAGE 2: RUNTIME
+# -----------------------------------------------------------------------------
+FROM eclipse-temurin:17-jre-alpine AS runtime
+
+# Install required tools for entrypoint script
+# - bash: for script execution
+# - unzip: for extracting Oracle Wallet ZIP
+# - ca-certificates: for SSL connections
+RUN apk add --no-cache bash unzip ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S quarkus && \
+    adduser -u 1001 -S quarkus -G quarkus
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built application from build stage
+COPY --from=maven-build /build/target/quarkus-app/lib/ ./lib/
+COPY --from=maven-build /build/target/quarkus-app/*.jar ./
+COPY --from=maven-build /build/target/quarkus-app/app/ ./app/
+COPY --from=maven-build /build/target/quarkus-app/quarkus/ ./quarkus/
+
+# Copy entrypoint script
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Create wallet directory with appropriate permissions
+RUN mkdir -p /app/wallet && chown -R quarkus:quarkus /app
+
+# Switch to non-root user
+USER quarkus
+
+# Expose the application port
+EXPOSE 8080
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health/ready || exit 1
+
+# Environment variables with defaults
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+ENV PORT=8080
+
+# Use entrypoint script (handles Oracle Wallet setup)
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,0 +1,101 @@
+# =============================================================================
+# RENDER.COM DEPLOYMENT CONFIGURATION
+# =============================================================================
+# This file defines the infrastructure for deploying Autoflex to Render.com.
+# It creates two services: a backend API and a static frontend.
+#
+# Usage:
+# 1. Push this file to your repository
+# 2. Go to Render Dashboard > Blueprints
+# 3. Connect your GitHub repository
+# 4. Render will auto-detect this file and create the services
+#
+# IMPORTANT: Set the following secrets in Render Dashboard:
+#   - WALLET_BASE64: Base64-encoded Oracle Wallet ZIP
+#   - ORACLE_USER: Database username
+#   - ORACLE_PASSWORD: Database password
+#   - ORACLE_JDBC_URL: JDBC connection URL
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # BACKEND API (Quarkus + Docker)
+  # ===========================================================================
+  - type: web
+    name: autoflex-api
+    runtime: docker
+    dockerfilePath: ./backend/docker/Dockerfile.jvm
+    dockerContext: ./backend
+    region: oregon  # Choose: oregon, ohio, frankfurt, singapore
+    plan: starter   # starter = 512MB RAM, 0.5 CPU (adjust as needed)
+    
+    # Health check endpoint
+    healthCheckPath: /health/ready
+    
+    # Environment variables (non-sensitive)
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: HIBERNATE_DDL
+        value: none  # NEVER use 'update' or 'create' in production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: JSON_LOGGING
+        value: 'true'
+      - key: CORS_ORIGINS
+        sync: false  # Set manually after frontend is deployed
+      
+      # Secrets (set in Render Dashboard)
+      - key: ORACLE_USER
+        sync: false
+      - key: ORACLE_PASSWORD
+        sync: false
+      - key: ORACLE_JDBC_URL
+        sync: false
+      - key: WALLET_BASE64
+        sync: false
+
+  # ===========================================================================
+  # FRONTEND (React Static Site)
+  # ===========================================================================
+  - type: web
+    name: autoflex-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    
+    # SPA routing (redirect all paths to index.html)
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    
+    # Response headers
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false  # Set to the backend URL after deployment
+
+# =============================================================================
+# DATABASE (Optional - if using Render PostgreSQL instead of Oracle)
+# =============================================================================
+# Uncomment if migrating to PostgreSQL:
+#
+# databases:
+#   - name: autoflex-db
+#     plan: starter  # starter = 256MB RAM
+#     databaseName: autoflex
+#     user: autoflex_user
