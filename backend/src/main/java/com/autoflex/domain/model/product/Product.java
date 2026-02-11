@@ -2,22 +2,30 @@ package com.autoflex.domain.model.product;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+
+import com.autoflex.domain.model.rawmaterial.RawMaterialId;
 
 /**
  * Product - Domain Entity representing a product in the Autoflex ERP system.
  *
- * <p>This is a pure domain entity with NO framework dependencies.
+ * <p>
+ * This is a pure domain entity with NO framework dependencies.
  * It contains only business logic and domain validation.
  *
- * <p><b>IMPORTANT:</b> This class must NOT contain:
+ * <p>
+ * <b>IMPORTANT:</b> This class must NOT contain:
  * <ul>
- *   <li>JPA annotations (@Entity, @Id, @Column)</li>
- *   <li>JSON annotations (@JsonProperty, @JsonIgnore)</li>
- *   <li>Any framework-specific code</li>
+ * <li>JPA annotations (@Entity, @Id, @Column)</li>
+ * <li>JSON annotations (@JsonProperty, @JsonIgnore)</li>
+ * <li>Any framework-specific code</li>
  * </ul>
  *
- * <p>The infrastructure layer (adapters) will handle the mapping
+ * <p>
+ * The infrastructure layer (adapters) will handle the mapping
  * between this domain entity and persistence/API representations.
  */
 public class Product {
@@ -31,6 +39,7 @@ public class Product {
     private boolean active;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private final List<BillOfMaterialItem> materials;
 
     /**
      * Private constructor - use factory methods or Builder.
@@ -44,7 +53,8 @@ public class Product {
             Integer stockQuantity,
             boolean active,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
+            LocalDateTime updatedAt,
+            List<BillOfMaterialItem> materials) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -54,6 +64,7 @@ public class Product {
         this.active = active;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.materials = new ArrayList<>(materials != null ? materials : List.of());
     }
 
     /**
@@ -66,7 +77,7 @@ public class Product {
             String sku,
             BigDecimal unitPrice,
             Integer stockQuantity) {
-        
+
         validateName(name);
         validateSku(sku);
         validateUnitPrice(unitPrice);
@@ -82,8 +93,8 @@ public class Product {
                 stockQuantity,
                 true, // new products are active by default
                 now,
-                now
-        );
+                now,
+                List.of());
     }
 
     /**
@@ -100,8 +111,29 @@ public class Product {
             boolean active,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
-        
-        return new Product(id, name, description, sku, unitPrice, stockQuantity, active, createdAt, updatedAt);
+
+        return new Product(id, name, description, sku, unitPrice, stockQuantity, active, createdAt, updatedAt,
+                List.of());
+    }
+
+    /**
+     * Factory method for reconstituting a Product from persistence with its bill of
+     * materials.
+     */
+    public static Product reconstitute(
+            ProductId id,
+            String name,
+            String description,
+            String sku,
+            BigDecimal unitPrice,
+            Integer stockQuantity,
+            boolean active,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt,
+            List<BillOfMaterialItem> materials) {
+
+        return new Product(id, name, description, sku, unitPrice, stockQuantity, active, createdAt, updatedAt,
+                materials);
     }
 
     // =========================================================================
@@ -161,6 +193,81 @@ public class Product {
      */
     public boolean hasSufficientStock(int requiredQuantity) {
         return this.stockQuantity >= requiredQuantity;
+    }
+
+    // =========================================================================
+    // BILL OF MATERIALS MANAGEMENT
+    // =========================================================================
+
+    /**
+     * Adds a raw material requirement to this product's bill of materials.
+     *
+     * @param rawMaterialId    the raw material to add
+     * @param quantityRequired the quantity needed to produce one unit of this
+     *                         product
+     * @throws IllegalArgumentException if the material is already in the BOM
+     */
+    public void addMaterial(RawMaterialId rawMaterialId, BigDecimal quantityRequired) {
+        Objects.requireNonNull(rawMaterialId, "Raw material ID cannot be null");
+        Objects.requireNonNull(quantityRequired, "Quantity required cannot be null");
+        if (quantityRequired.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity required must be positive");
+        }
+        boolean exists = materials.stream()
+                .anyMatch(m -> m.rawMaterialId().equals(rawMaterialId));
+        if (exists) {
+            throw new IllegalArgumentException(
+                    "Material " + rawMaterialId + " is already in the bill of materials");
+        }
+        materials.add(BillOfMaterialItem.of(rawMaterialId, quantityRequired));
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Removes a raw material from this product's bill of materials.
+     *
+     * @param rawMaterialId the raw material to remove
+     * @throws IllegalArgumentException if the material is not in the BOM
+     */
+    public void removeMaterial(RawMaterialId rawMaterialId) {
+        Objects.requireNonNull(rawMaterialId, "Raw material ID cannot be null");
+        boolean removed = materials.removeIf(m -> m.rawMaterialId().equals(rawMaterialId));
+        if (!removed) {
+            throw new IllegalArgumentException(
+                    "Material " + rawMaterialId + " is not in the bill of materials");
+        }
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Updates the required quantity of a raw material in the BOM.
+     *
+     * @param rawMaterialId the raw material to update
+     * @param newQuantity   the new required quantity
+     * @throws IllegalArgumentException if the material is not in the BOM
+     */
+    public void updateMaterialQuantity(RawMaterialId rawMaterialId, BigDecimal newQuantity) {
+        Objects.requireNonNull(rawMaterialId, "Raw material ID cannot be null");
+        Objects.requireNonNull(newQuantity, "New quantity cannot be null");
+        if (newQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity required must be positive");
+        }
+        for (int i = 0; i < materials.size(); i++) {
+            if (materials.get(i).rawMaterialId().equals(rawMaterialId)) {
+                materials.set(i, materials.get(i).withQuantity(newQuantity));
+                this.updatedAt = LocalDateTime.now();
+                return;
+            }
+        }
+        throw new IllegalArgumentException(
+                "Material " + rawMaterialId + " is not in the bill of materials");
+    }
+
+    /**
+     * Returns an unmodifiable view of the bill of materials.
+     */
+    public List<BillOfMaterialItem> getMaterials() {
+        return Collections.unmodifiableList(materials);
     }
 
     // =========================================================================
@@ -249,8 +356,10 @@ public class Product {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Product product = (Product) o;
         // For entities, equality is based on identity (ID)
         return id != null && Objects.equals(id, product.id);

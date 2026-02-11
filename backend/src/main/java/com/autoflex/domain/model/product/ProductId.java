@@ -5,13 +5,15 @@ import java.util.Objects;
 /**
  * ProductId - Value Object representing a unique product identifier.
  *
- * <p>Immutable value object that encapsulates the product ID concept.
+ * <p>
+ * Immutable value object that encapsulates the product ID concept.
  * Using a Value Object instead of primitive Long provides:
  * - Type safety (cannot accidentally pass a RawMaterialId as ProductId)
  * - Self-validation
  * - Domain semantics
  *
- * <p><b>NOTE:</b> This is a pure domain object with NO framework annotations.
+ * <p>
+ * <b>NOTE:</b> This is a pure domain object with NO framework annotations.
  */
 public record ProductId(Long value) {
 
