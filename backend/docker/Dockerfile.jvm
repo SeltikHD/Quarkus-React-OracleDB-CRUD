@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------------------
 # STAGE 1: BUILD
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:17-jdk-alpine AS maven-build
+FROM eclipse-temurin:21-jdk-alpine AS maven-build
 
 # Install Maven
 RUN apk add --no-cache maven
@@ -42,7 +42,7 @@ RUN mvn package -DskipTests -Dquarkus.package.type=fast-jar
 # -----------------------------------------------------------------------------
 # STAGE 2: RUNTIME
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:17-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 # Install required tools for entrypoint script
 # - bash: for script execution
