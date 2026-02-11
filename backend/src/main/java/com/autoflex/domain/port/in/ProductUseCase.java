@@ -10,18 +10,22 @@ import com.autoflex.domain.model.product.ProductId;
 /**
  * ProductUseCase - Input Port defining product management operations.
  *
- * <p><b>HEXAGONAL ARCHITECTURE:</b>
+ * <p>
+ * <b>HEXAGONAL ARCHITECTURE:</b>
  * This is an INPUT PORT (also called a "driving port" or "primary port").
  * It defines the use cases that the application exposes to the outside world.
  *
- * <p>The REST API (adapter) will call these methods. The implementation
- * (in the application layer) will orchestrate domain logic and call output ports.
+ * <p>
+ * The REST API (adapter) will call these methods. The implementation
+ * (in the application layer) will orchestrate domain logic and call output
+ * ports.
  *
- * <p><b>DESIGN NOTES:</b>
+ * <p>
+ * <b>DESIGN NOTES:</b>
  * <ul>
- *   <li>Uses Command/Query objects for complex inputs (CQRS-inspired)</li>
- *   <li>Returns domain objects, not DTOs</li>
- *   <li>Throws domain exceptions for known error cases</li>
+ * <li>Uses Command/Query objects for complex inputs (CQRS-inspired)</li>
+ * <li>Returns domain objects, not DTOs</li>
+ * <li>Throws domain exceptions for known error cases</li>
  * </ul>
  */
 public interface ProductUseCase {
@@ -42,10 +46,10 @@ public interface ProductUseCase {
     /**
      * Updates an existing product.
      *
-     * @param id the product ID to update
+     * @param id      the product ID to update
      * @param command the updated product data
      * @return the updated product
-     * @throws ProductNotFoundException if product doesn't exist
+     * @throws ProductNotFoundException         if product doesn't exist
      * @throws ProductSkuAlreadyExistsException if new SKU is already in use
      */
     Product updateProduct(ProductId id, UpdateProductCommand command);
@@ -53,10 +57,10 @@ public interface ProductUseCase {
     /**
      * Adjusts the stock quantity of a product.
      *
-     * @param id the product ID
+     * @param id            the product ID
      * @param quantityDelta positive to add, negative to subtract
      * @return the updated product
-     * @throws ProductNotFoundException if product doesn't exist
+     * @throws ProductNotFoundException   if product doesn't exist
      * @throws InsufficientStockException if reducing below zero
      */
     Product adjustStock(ProductId id, int quantityDelta);
@@ -121,6 +125,41 @@ public interface ProductUseCase {
     List<Product> searchProducts(String searchTerm);
 
     // =========================================================================
+    // BILL OF MATERIALS MANAGEMENT
+    // =========================================================================
+
+    /**
+     * Adds a raw material to a product's bill of materials.
+     *
+     * @param productId the product ID
+     * @param command   the material and quantity to add
+     * @return the updated product
+     * @throws ProductNotFoundException if product doesn't exist
+     */
+    Product addMaterialToProduct(ProductId productId, AddMaterialCommand command);
+
+    /**
+     * Removes a raw material from a product's bill of materials.
+     *
+     * @param productId     the product ID
+     * @param rawMaterialId the raw material ID to remove
+     * @return the updated product
+     * @throws ProductNotFoundException if product doesn't exist
+     */
+    Product removeMaterialFromProduct(ProductId productId, Long rawMaterialId);
+
+    /**
+     * Updates the required quantity of a raw material in a product's BOM.
+     *
+     * @param productId     the product ID
+     * @param rawMaterialId the raw material ID to update
+     * @param newQuantity   the new required quantity
+     * @return the updated product
+     * @throws ProductNotFoundException if product doesn't exist
+     */
+    Product updateMaterialQuantity(ProductId productId, Long rawMaterialId, BigDecimal newQuantity);
+
+    // =========================================================================
     // COMMAND RECORDS (Immutable input objects)
     // =========================================================================
 
@@ -132,8 +171,7 @@ public interface ProductUseCase {
             String description,
             String sku,
             BigDecimal unitPrice,
-            Integer stockQuantity
-    ) {
+            Integer stockQuantity) {
         public CreateProductCommand {
             // Basic null checks - domain entity handles full validation
             if (name == null || name.isBlank()) {
@@ -158,8 +196,7 @@ public interface ProductUseCase {
             String name,
             String description,
             String sku,
-            BigDecimal unitPrice
-    ) {
+            BigDecimal unitPrice) {
         public UpdateProductCommand {
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("Product name is required");
@@ -169,6 +206,23 @@ public interface ProductUseCase {
             }
             if (unitPrice == null) {
                 throw new IllegalArgumentException("Unit price is required");
+            }
+        }
+    }
+
+    /**
+     * Command for adding a raw material to a product's bill of materials.
+     */
+    record AddMaterialCommand(Long rawMaterialId, BigDecimal quantityRequired) {
+        public AddMaterialCommand {
+            if (rawMaterialId == null) {
+                throw new IllegalArgumentException("Raw material ID is required");
+            }
+            if (quantityRequired == null) {
+                throw new IllegalArgumentException("Quantity required is required");
+            }
+            if (quantityRequired.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Quantity required must be positive");
             }
         }
     }
@@ -191,8 +245,8 @@ public interface ProductUseCase {
 
     class InsufficientStockException extends RuntimeException {
         public InsufficientStockException(ProductId id, int available, int requested) {
-            super("Insufficient stock for product " + id + 
-                  ". Available: " + available + ", Requested: " + requested);
+            super("Insufficient stock for product " + id +
+                    ". Available: " + available + ", Requested: " + requested);
         }
     }
 }

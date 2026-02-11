@@ -9,19 +9,25 @@ import com.autoflex.domain.model.product.ProductId;
 /**
  * ProductRepository - Output Port for Product persistence operations.
  *
- * <p>This interface defines the contract that any persistence adapter must implement.
- * It is part of the domain layer but will be implemented in the infrastructure layer.
+ * <p>
+ * This interface defines the contract that any persistence adapter must
+ * implement.
+ * It is part of the domain layer but will be implemented in the infrastructure
+ * layer.
  *
- * <p><b>HEXAGONAL ARCHITECTURE:</b>
+ * <p>
+ * <b>HEXAGONAL ARCHITECTURE:</b>
  * This is an OUTPUT PORT (also called a "driven port" or "secondary port").
- * The domain layer defines what it needs, and the infrastructure provides the implementation.
+ * The domain layer defines what it needs, and the infrastructure provides the
+ * implementation.
  *
- * <p><b>KEY PRINCIPLES:</b>
+ * <p>
+ * <b>KEY PRINCIPLES:</b>
  * <ul>
- *   <li>Uses domain objects (Product, ProductId), not JPA entities</li>
- *   <li>No framework-specific types (no Page, Pageable, etc.)</li>
- *   <li>Returns Optional for single queries (null-safe)</li>
- *   <li>Throws domain exceptions, not infrastructure exceptions</li>
+ * <li>Uses domain objects (Product, ProductId), not JPA entities</li>
+ * <li>No framework-specific types (no Page, Pageable, etc.)</li>
+ * <li>Returns Optional for single queries (null-safe)</li>
+ * <li>Throws domain exceptions, not infrastructure exceptions</li>
  * </ul>
  */
 public interface ProductRepository {
@@ -98,4 +104,12 @@ public interface ProductRepository {
      * @return true if the product exists
      */
     boolean existsById(ProductId id);
+
+    /**
+     * Retrieves all active products with their bill of materials eagerly loaded.
+     * Used by the production calculator to avoid N+1 queries.
+     *
+     * @return a list of active products with materials populated
+     */
+    List<Product> findAllActiveWithMaterials();
 }
