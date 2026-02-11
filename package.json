@@ -18,8 +18,8 @@
     "build:backend": "cd backend && mvn package -DskipTests"
   },
   "devDependencies": {
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2"
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
   },
   "packageManager": "bun@1.3.5"
 }

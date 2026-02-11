@@ -1,23 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { productApi } from '@/services/productApi';
-import type { IProduct, IProductRequest } from '@/types/product';
 
+import type { IBillOfMaterialItemRequest, IProduct, IProductRequest } from '@/types';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-/**
- * Product state interface.
- */
-interface IProductState {
+// ============================================================================
+// STATE
+// ============================================================================
+
+export interface IProductState {
   items: IProduct[];
   selectedProduct: IProduct | null;
   loading: boolean;
   error: string | null;
 }
 
-/**
- * Initial state for products.
- */
 const initialState: IProductState = {
   items: [],
   selectedProduct: null,
@@ -29,9 +27,6 @@ const initialState: IProductState = {
 // ASYNC THUNKS
 // ============================================================================
 
-/**
- * Fetch all products from the API.
- */
 export const fetchProducts = createAsyncThunk<
   IProduct[],
   { includeInactive?: boolean } | undefined,
@@ -45,9 +40,6 @@ export const fetchProducts = createAsyncThunk<
   }
 });
 
-/**
- * Fetch a single product by ID.
- */
 export const fetchProductById = createAsyncThunk<IProduct, number, { rejectValue: string }>(
   'products/fetchById',
   async (id, { rejectWithValue }) => {
@@ -60,9 +52,6 @@ export const fetchProductById = createAsyncThunk<IProduct, number, { rejectValue
   }
 );
 
-/**
- * Create a new product.
- */
 export const createProduct = createAsyncThunk<IProduct, IProductRequest, { rejectValue: string }>(
   'products/create',
   async (product, { rejectWithValue }) => {
@@ -75,9 +64,6 @@ export const createProduct = createAsyncThunk<IProduct, IProductRequest, { rejec
   }
 );
 
-/**
- * Update an existing product.
- */
 export const updateProduct = createAsyncThunk<
   IProduct,
   { id: number; product: IProductRequest },
@@ -91,9 +77,6 @@ export const updateProduct = createAsyncThunk<
   }
 });
 
-/**
- * Delete a product.
- */
 export const deleteProduct = createAsyncThunk<number, number, { rejectValue: string }>(
   'products/delete',
   async (id, { rejectWithValue }) => {
@@ -107,6 +90,33 @@ export const deleteProduct = createAsyncThunk<number, number, { rejectValue: str
   }
 );
 
+export const addMaterialToProduct = createAsyncThunk<
+  IProduct,
+  { productId: number; request: IBillOfMaterialItemRequest },
+  { rejectValue: string }
+>('products/addMaterial', async ({ productId, request }, { rejectWithValue }) => {
+  try {
+    return await productApi.addMaterial(productId, request);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to add material';
+    return rejectWithValue(message);
+  }
+});
+
+export const removeMaterialFromProduct = createAsyncThunk<
+  { productId: number; rawMaterialId: number },
+  { productId: number; rawMaterialId: number },
+  { rejectValue: string }
+>('products/removeMaterial', async ({ productId, rawMaterialId }, { rejectWithValue }) => {
+  try {
+    await productApi.removeMaterial(productId, rawMaterialId);
+    return { productId, rawMaterialId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to remove material';
+    return rejectWithValue(message);
+  }
+});
+
 // ============================================================================
 // SLICE
 // ============================================================================
@@ -115,30 +125,19 @@ const productSlice = createSlice({
   name: 'products',
   initialState,
   reducers: {
-    /**
-     * Clear any error state.
-     */
     clearError: (state) => {
       state.error = null;
     },
-
-    /**
-     * Set the selected product for viewing/editing.
-     */
     setSelectedProduct: (state, action: PayloadAction<IProduct | null>) => {
       state.selectedProduct = action.payload;
     },
-
-    /**
-     * Clear the selected product.
-     */
     clearSelectedProduct: (state) => {
       state.selectedProduct = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch All Products
+      // Fetch All
       .addCase(fetchProducts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -151,22 +150,12 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? 'Unknown error';
       })
-
-      // Fetch Single Product
-      .addCase(fetchProductById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Fetch By Id
       .addCase(fetchProductById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedProduct = action.payload;
       })
-      .addCase(fetchProductById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload ?? 'Unknown error';
-      })
-
-      // Create Product
+      // Create
       .addCase(createProduct.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -179,8 +168,7 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? 'Unknown error';
       })
-
-      // Update Product
+      // Update
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.loading = false;
         const index = state.items.findIndex((p) => p.id === action.payload.id);
@@ -191,18 +179,48 @@ const productSlice = createSlice({
           state.selectedProduct = action.payload;
         }
       })
-
-      // Delete Product
+      // Delete
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.items = state.items.filter((p) => p.id !== action.payload);
         if (state.selectedProduct?.id === action.payload) {
           state.selectedProduct = null;
         }
+      })
+      // Add Material
+      .addCase(addMaterialToProduct.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(addMaterialToProduct.fulfilled, (state, action) => {
+        const index = state.items.findIndex((p) => p.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+        if (state.selectedProduct?.id === action.payload.id) {
+          state.selectedProduct = action.payload;
+        }
+      })
+      .addCase(addMaterialToProduct.rejected, (state, action) => {
+        state.error = action.payload ?? 'Unknown error';
+      })
+      // Remove Material
+      .addCase(removeMaterialFromProduct.fulfilled, (state, action) => {
+        const { productId, rawMaterialId } = action.payload;
+        const product = state.items.find((p) => p.id === productId);
+        if (product) {
+          product.materials = product.materials.filter((m) => m.rawMaterialId !== rawMaterialId);
+        }
+        if (state.selectedProduct?.id === productId) {
+          state.selectedProduct.materials = state.selectedProduct.materials.filter(
+            (m) => m.rawMaterialId !== rawMaterialId
+          );
+        }
+      })
+      .addCase(removeMaterialFromProduct.rejected, (state, action) => {
+        state.error = action.payload ?? 'Unknown error';
       });
   },
 });
 
 export const { clearError, setSelectedProduct, clearSelectedProduct } = productSlice.actions;
-
 export default productSlice.reducer;

@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "name": "Carbon Steel Rod",
+    "description": "High-grade carbon steel for structural use",
+    "code": "RM-STEEL-001",
+    "unit": "KILOGRAM",
+    "unitAbbreviation": "kg",
+    "stockQuantity": 500,
+    "unitCost": 3.50,
+    "active": true,
+    "createdAt": "2026-01-10T08:00:00",
+    "updatedAt": "2026-01-10T08:00:00"
+  },
+  {
+    "id": 2,
+    "name": "Copper Wire",
+    "description": "Pure copper wiring for conductors",
+    "code": "RM-COPPER-002",
+    "unit": "METER",
+    "unitAbbreviation": "m",
+    "stockQuantity": 1000,
+    "unitCost": 1.25,
+    "active": true,
+    "createdAt": "2026-01-11T09:00:00",
+    "updatedAt": "2026-01-11T09:00:00"
+  },
+  {
+    "id": 3,
+    "name": "Plastic Resin",
+    "description": "ABS plastic resin pellets",
+    "code": "RM-PLASTIC-003",
+    "unit": "KILOGRAM",
+    "unitAbbreviation": "kg",
+    "stockQuantity": 0,
+    "unitCost": 2.00,
+    "active": false,
+    "createdAt": "2026-01-12T10:00:00",
+    "updatedAt": "2026-01-12T10:00:00"
+  }
+]

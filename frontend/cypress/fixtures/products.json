@@ -8,28 +8,22 @@
     "stockQuantity": 100,
     "active": true,
     "createdAt": "2026-01-15T10:30:00",
-    "updatedAt": "2026-01-15T10:30:00"
+    "updatedAt": "2026-01-15T10:30:00",
+    "materials": [
+      { "rawMaterialId": 1, "quantityRequired": 2.5 },
+      { "rawMaterialId": 2, "quantityRequired": 1.0 }
+    ]
   },
   {
     "id": 2,
     "name": "Industrial Sensor ABC",
     "description": "Precision sensor for manufacturing processes",
     "sku": "SENS-ABC-002",
-    "unitPrice": 149.5,
+    "unitPrice": 149.50,
     "stockQuantity": 50,
     "active": true,
     "createdAt": "2026-01-14T09:15:00",
-    "updatedAt": "2026-01-14T09:15:00"
-  },
-  {
-    "id": 3,
-    "name": "Raw Material Steel Rod",
-    "description": "High-grade steel rod for production",
-    "sku": "RAW-STEEL-003",
-    "unitPrice": 8.75,
-    "stockQuantity": 500,
-    "active": true,
-    "createdAt": "2026-01-13T14:45:00",
-    "updatedAt": "2026-01-13T14:45:00"
+    "updatedAt": "2026-01-14T09:15:00",
+    "materials": []
   }
 ]

@@ -1,0 +1,751 @@
+openapi: 3.1.0
+components:
+  schemas:
+    BillOfMaterialItemRequest:
+      type: object
+      required:
+        - rawMaterialId
+        - quantityRequired
+      description: Request body for adding a material to a product's BOM
+      properties:
+        rawMaterialId:
+          type: integer
+          format: int64
+          examples:
+            - 1
+          description: Raw material ID
+        quantityRequired:
+          type: number
+          examples:
+            - 2.5
+          description: Quantity of raw material needed to produce one unit of the
+            product
+          multipleOf: 0.00010
+          minimum: 0.00010
+    BillOfMaterialItemResponse:
+      type: object
+      description: Bill of material item information
+      properties:
+        rawMaterialId:
+          type: integer
+          format: int64
+          examples:
+            - 1
+          description: Raw material ID
+        quantityRequired:
+          type: number
+          examples:
+            - 2.5
+          description: Quantity of raw material needed per product unit
+    LocalDateTime:
+      type: string
+      format: date-time
+      examples:
+        - 2022-03-10T12:15:50
+    ProductRequest:
+      type: object
+      required:
+        - name
+        - sku
+        - unitPrice
+      description: Request body for creating or updating a product
+      properties:
+        name:
+          type: string
+          examples:
+            - Electronic Component XYZ
+          maxLength: 255
+          pattern: \S
+          description: Product name
+        description:
+          type: string
+          examples:
+            - High-quality electronic component for industrial use
+          maxLength: 2000
+          description: Product description
+        sku:
+          type: string
+          examples:
+            - COMP-XYZ-001
+          maxLength: 50
+          pattern: '^[A-Za-z0-9-]+$'
+          description: Stock Keeping Unit (unique identifier)
+        unitPrice:
+          type: number
+          examples:
+            - 29.99
+          description: Unit price in the default currency
+          multipleOf: 0.00010
+          minimum: 0.0
+        stockQuantity:
+          type: integer
+          format: int32
+          examples:
+            - 100
+          description: Initial stock quantity
+          minimum: 0
+    ProductResponse:
+      type: object
+      description: Product information returned by the API
+      properties:
+        id:
+          type: integer
+          format: int64
+          examples:
+            - 1
+          description: Unique product identifier
+        name:
+          type: string
+          examples:
+            - Electronic Component XYZ
+          description: Product name
+        description:
+          type: string
+          examples:
+            - High-quality electronic component
+          description: Product description
+        sku:
+          type: string
+          examples:
+            - COMP-XYZ-001
+          description: Stock Keeping Unit
+        unitPrice:
+          type: number
+          examples:
+            - 29.99
+          description: Unit price
+        stockQuantity:
+          type: integer
+          format: int32
+          examples:
+            - 100
+          description: Current stock quantity
+        active:
+          type: boolean
+          examples:
+            - true
+          description: Whether the product is active
+        createdAt:
+          $ref: '#/components/schemas/LocalDateTime'
+          type: string
+          description: Creation timestamp
+        updatedAt:
+          $ref: '#/components/schemas/LocalDateTime'
+          type: string
+          description: Last update timestamp
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillOfMaterialItemResponse'
+          description: Bill of materials (raw material requirements)
+    ProductionItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+          examples:
+            - 1
+          description: Product ID
+        productName:
+          type: string
+          examples:
+            - Electronic Component XYZ
+          description: Product name
+        productSku:
+          type: string
+          examples:
+            - COMP-XYZ-001
+          description: Product SKU
+        quantity:
+          type: integer
+          format: int32
+          examples:
+            - 50
+          description: Number of units to produce
+        unitPrice:
+          type: number
+          examples:
+            - 29.99
+          description: Unit price of the product
+        totalValue:
+          type: number
+          examples:
+            - 1499.5
+          description: Total value for this product line
+    ProductionPlanResponse:
+      type: object
+      description: Result of the greedy production calculation algorithm
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductionItem'
+          description: List of products to produce with quantities
+        totalProductionValue:
+          type: number
+          examples:
+            - 15750.0
+          description: Total production value across all items
+        totalUnits:
+          type: integer
+          format: int32
+          examples:
+            - 250
+          description: Total number of product units to produce
+        remainingStock:
+          type: object
+          additionalProperties:
+            type: number
+          description: Remaining raw material stock after production
+    RawMaterialRequest:
+      type: object
+      required:
+        - name
+        - code
+        - unit
+        - unitCost
+      description: Request body for creating or updating a raw material
+      properties:
+        name:
+          type: string
+          examples:
+            - Steel Sheet
+          maxLength: 255
+          pattern: \S
+          description: Raw material name
+        description:
+          type: string
+          maxLength: 2000
+          description: Raw material description
+        code:
+          type: string
+          examples:
+            - RM-STEEL-001
+          maxLength: 50
+          pattern: '^[A-Za-z0-9-]+$'
+          description: Unique material code
+        unit:
+          type: string
+          examples:
+            - KILOGRAM
+          pattern: \S
+          description: "Measurement unit (KILOGRAM, GRAM, LITER, MILLILITER, METER,\
+            \ CENTIMETER, UNIT, PIECE, PAIR, BOX, ROLL, SHEET)"
+        unitCost:
+          type: number
+          examples:
+            - 15.5
+          description: Cost per unit
+          multipleOf: 0.00010
+          minimum: 0.0
+        stockQuantity:
+          type: number
+          examples:
+            - 500.0
+          description: Initial stock quantity
+          multipleOf: 0.00010
+          minimum: 0.0
+    RawMaterialResponse:
+      type: object
+      description: Raw material information returned by the API
+      properties:
+        id:
+          type: integer
+          format: int64
+          examples:
+            - 1
+          description: Unique raw material identifier
+        name:
+          type: string
+          examples:
+            - Steel Sheet
+          description: Raw material name
+        description:
+          type: string
+          description: Raw material description
+        code:
+          type: string
+          examples:
+            - RM-STEEL-001
+          description: Unique material code
+        unit:
+          type: string
+          examples:
+            - KILOGRAM
+          description: Measurement unit
+        unitAbbreviation:
+          type: string
+          examples:
+            - kg
+          description: Unit abbreviation
+        stockQuantity:
+          type: number
+          examples:
+            - 500.0
+          description: Current stock quantity
+        unitCost:
+          type: number
+          examples:
+            - 15.5
+          description: Cost per unit
+        active:
+          type: boolean
+          examples:
+            - true
+          description: Whether the raw material is active
+        createdAt:
+          $ref: '#/components/schemas/LocalDateTime'
+          type: string
+          description: Creation timestamp
+        updatedAt:
+          $ref: '#/components/schemas/LocalDateTime'
+          type: string
+          description: Last update timestamp
+    StockAdjustmentRequest:
+      type: object
+      required:
+        - quantity
+      description: Request body for adjusting stock quantity
+      properties:
+        quantity:
+          type: number
+          examples:
+            - 100.0
+          description: Quantity to add (positive) or remove (negative) from current
+            stock
+    UpdateMaterialQuantityRequest:
+      type: object
+      required:
+        - quantityRequired
+      description: Request body for updating material quantity in BOM
+      properties:
+        quantityRequired:
+          type: number
+          examples:
+            - 25.0
+          description: New quantity of raw material needed per product unit
+          multipleOf: 0.00010
+          minimum: 0.00010
+tags:
+  - name: Production
+    description: Production planning and calculation operations
+  - name: Products
+    description: Product management operations
+  - name: Raw Materials
+    description: Raw material management operations
+paths:
+  /api/v1/production/calculate:
+    post:
+      summary: Calculate optimal production plan
+      description: "Uses the Greedy Algorithm to calculate which products can be produced\
+        \ based on available raw material stock, prioritizing products with higher\
+        \ sales value (unit price)."
+      tags:
+        - Production
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductionPlanResponse'
+  /api/v1/products:
+    get:
+      summary: List all products
+      description: Retrieves a list of all active products
+      tags:
+        - Products
+      parameters:
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+    post:
+      summary: Create product
+      description: Creates a new product
+      tags:
+        - Products
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Invalid request
+        '409':
+          description: Product with SKU already exists
+  /api/v1/products/{id}:
+    put:
+      summary: Update product
+      description: Updates an existing product
+      tags:
+        - Products
+      parameters:
+        - description: Product ID
+          required: true
+          name: id
+          in: path
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Product not found
+        '409':
+          description: Product with SKU already exists
+    get:
+      summary: Get product by ID
+      description: Retrieves a single product by its ID
+      tags:
+        - Products
+      parameters:
+        - description: Product ID
+          required: true
+          name: id
+          in: path
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          description: Product not found
+    delete:
+      summary: Delete product
+      description: Soft-deletes a product by deactivating it
+      tags:
+        - Products
+      parameters:
+        - description: Product ID
+          required: true
+          name: id
+          in: path
+          schema:
+            type: integer
+            format: int64
+        - description: Permanently delete instead of soft-delete
+          name: permanent
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '204':
+          description: Product deactivated successfully
+        '404':
+          description: Product not found
+  /api/v1/products/{id}/materials:
+    get:
+      summary: Get product's bill of materials
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillOfMaterialItemResponse'
+    post:
+      summary: Add material to product BOM
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillOfMaterialItemRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Bad Request
+  /api/v1/products/{id}/materials/{rawMaterialId}:
+    put:
+      summary: Update material quantity in BOM
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: rawMaterialId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMaterialQuantityRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Bad Request
+    delete:
+      summary: Remove material from product BOM
+      tags:
+        - Products
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: rawMaterialId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+  /api/v1/products/{id}/stock:
+    patch:
+      summary: Adjust stock
+      description: Adjusts the stock quantity of a product
+      tags:
+        - Products
+      parameters:
+        - description: Product ID
+          required: true
+          name: id
+          in: path
+          schema:
+            type: integer
+            format: int64
+        - description: Quantity to add (positive) or remove (negative)
+          required: true
+          name: delta
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Stock adjusted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Invalid quantity or insufficient stock
+        '404':
+          description: Product not found
+  /api/v1/raw-materials:
+    get:
+      summary: List all raw materials
+      tags:
+        - Raw Materials
+      parameters:
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RawMaterialResponse'
+    post:
+      summary: Create raw material
+      tags:
+        - Raw Materials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RawMaterialRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: Bad Request
+  /api/v1/raw-materials/{id}:
+    put:
+      summary: Update raw material
+      tags:
+        - Raw Materials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RawMaterialRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialResponse'
+        '400':
+          description: Bad Request
+    get:
+      summary: Get raw material by ID
+      tags:
+        - Raw Materials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialResponse'
+    delete:
+      summary: Delete or deactivate raw material
+      tags:
+        - Raw Materials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: permanent
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+  /api/v1/raw-materials/{id}/stock:
+    patch:
+      summary: Adjust raw material stock
+      tags:
+        - Raw Materials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAdjustmentRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawMaterialResponse'
+info:
+  title: Autoflex API
+  version: 1.0.0
+  description: ERP Module for Product and Raw Material Management

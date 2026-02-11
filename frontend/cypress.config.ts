@@ -9,7 +9,7 @@ import { defineConfig } from 'cypress';
 export default defineConfig({
   e2e: {
     // Base URL for the application under test
-    baseUrl: 'http://localhost:5173',
+    baseUrl: 'http://localhost:3000',
 
     // Test file patterns
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',

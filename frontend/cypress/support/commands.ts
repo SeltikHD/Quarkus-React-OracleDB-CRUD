@@ -1,15 +1,12 @@
 /**
- * Cypress Custom Commands.
+ * Cypress Custom Commands for Autoflex ERP E2E Tests.
  *
- * Add custom commands here for reusable test actions.
- * These commands are available globally in all test files.
+ * Provides reusable commands for API mocking, element selection,
+ * and common user interactions.
  */
 
 /**
- * Mock API responses for testing.
- *
- * @example
- * cy.mockApi('GET', '/products', [{ id: 1, name: 'Test Product' }]);
+ * Mock all API responses for a given page context.
  */
 Cypress.Commands.add('mockApi', (method: string, url: string, response: unknown) => {
   const apiUrl = Cypress.env('apiUrl') as string;
@@ -21,13 +18,60 @@ Cypress.Commands.add('mockApi', (method: string, url: string, response: unknown)
 
 /**
  * Get an element by data-testid attribute.
- * Encourages using data-testid for test selectors instead of CSS classes.
- *
- * @example
- * cy.getByTestId('submit-button').click();
  */
 Cypress.Commands.add('getByTestId', (testId: string) => {
   return cy.get(`[data-testid="${testId}"]`);
+});
+
+/**
+ * Mock the full raw materials API (GET list).
+ */
+Cypress.Commands.add('mockRawMaterials', () => {
+  cy.fixture('raw-materials.json').then((materials: unknown) => {
+    cy.intercept('GET', '**/api/v1/raw-materials*', {
+      statusCode: 200,
+      body: materials,
+    }).as('getRawMaterials');
+  });
+});
+
+/**
+ * Mock the full products API (GET list).
+ */
+Cypress.Commands.add('mockProducts', () => {
+  cy.fixture('products.json').then((products: unknown) => {
+    cy.intercept('GET', '**/api/v1/products*', {
+      statusCode: 200,
+      body: products,
+    }).as('getProducts');
+  });
+});
+
+/**
+ * Mock the production calculation API.
+ */
+Cypress.Commands.add('mockProduction', () => {
+  cy.fixture('production-plan.json').then((plan: unknown) => {
+    cy.intercept('POST', '**/api/v1/production/calculate', {
+      statusCode: 200,
+      body: plan,
+    }).as('calculateProduction');
+  });
+});
+
+/**
+ * Fill a MUI TextField by its label text.
+ */
+Cypress.Commands.add('fillField', (label: string, value: string) => {
+  cy.contains('label', label).parent().find('input, textarea').first().clear().type(value);
+});
+
+/**
+ * Select a value from a MUI Select dropdown by its label and option text.
+ */
+Cypress.Commands.add('selectOption', (label: string, optionText: string) => {
+  cy.contains('label', label).parent().find('[role="combobox"]').click();
+  cy.get('[role="listbox"]').contains(optionText).click();
 });
 
 // Extend Chainable interface for TypeScript
@@ -35,11 +79,13 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
-      /**
-       * Get element by data-testid attribute.
-       * @example cy.getByTestId('product-list')
-       */
       getByTestId(testId: string): Chainable<JQuery<HTMLElement>>;
+      mockApi(method: string, url: string, response: unknown): Chainable<void>;
+      mockRawMaterials(): Chainable<void>;
+      mockProducts(): Chainable<void>;
+      mockProduction(): Chainable<void>;
+      fillField(label: string, value: string): Chainable<void>;
+      selectOption(label: string, optionText: string): Chainable<void>;
     }
   }
 }

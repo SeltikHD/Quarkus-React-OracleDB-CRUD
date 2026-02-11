@@ -1,6 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 import productReducer from './slices/productSlice';
+import productionReducer from './slices/productionSlice';
+import rawMaterialReducer from './slices/rawMaterialSlice';
 
 /**
  * Redux Store Configuration for Autoflex.
@@ -8,17 +10,14 @@ import productReducer from './slices/productSlice';
  * This is the central state store following Redux Toolkit best practices.
  *
  * Architecture:
- * - Feature-based slices (products, rawMaterials, etc.)
- * - RTK Query for API caching (can be added later)
+ * - Feature-based slices (products, rawMaterials, production)
  * - Middleware for logging and async operations
  */
 export const store = configureStore({
   reducer: {
     products: productReducer,
-    // Add more slices here as the application grows:
-    // rawMaterials: rawMaterialReducer,
-    // production: productionReducer,
-    // ui: uiReducer,
+    rawMaterials: rawMaterialReducer,
+    production: productionReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

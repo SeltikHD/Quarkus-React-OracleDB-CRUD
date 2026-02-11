@@ -19,7 +19,22 @@ export {
   createProduct,
   updateProduct,
   deleteProduct,
+  addMaterialToProduct,
+  removeMaterialFromProduct,
   clearError,
   setSelectedProduct,
   clearSelectedProduct,
 } from './slices/productSlice';
+
+// Raw Material Slice
+export {
+  fetchRawMaterials,
+  createRawMaterial,
+  updateRawMaterial,
+  adjustRawMaterialStock,
+  deleteRawMaterial,
+  clearRawMaterialError,
+} from './slices/rawMaterialSlice';
+
+// Production Slice
+export { calculateProductionPlan, clearPlan, clearProductionError } from './slices/productionSlice';

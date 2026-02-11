@@ -1,38 +1,30 @@
-import { Box, Container, Typography } from '@mui/material';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import type { ReactElement } from 'react';
+
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+import Layout from '@/components/layout/Layout';
+import DashboardPage from '@/pages/DashboardPage';
+import ProductionPage from '@/pages/ProductionPage';
+import ProductsPage from '@/pages/ProductsPage';
+import RawMaterialsPage from '@/pages/RawMaterialsPage';
 
 /**
  * Main Application Component.
  *
- * This is the root component that sets up routing and the main layout.
- * Additional pages will be added here as the application grows.
+ * Sets up routing with a persistent sidebar/navbar layout.
  */
-function App(): JSX.Element {
+function App(): ReactElement {
   return (
     <BrowserRouter>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Main Content */}
-        <Container component="main" sx={{ flex: 1, py: 4 }}>
-          <Routes>
-            <Route
-              element={
-                <Box>
-                  <Typography gutterBottom component="h1" variant="h4">
-                    Welcome to Autoflex ERP
-                  </Typography>
-                  <Typography color="text.secondary" variant="body1">
-                    Product and Raw Material Management System
-                  </Typography>
-                </Box>
-              }
-              path="/"
-            />
-            {/* Add more routes here as pages are developed */}
-            {/* <Route path="/products" element={<ProductsPage />} /> */}
-            {/* <Route path="/raw-materials" element={<RawMaterialsPage />} /> */}
-          </Routes>
-        </Container>
-      </Box>
+      <Routes>
+        <Route element={<Layout />} path="/">
+          <Route element={<DashboardPage />} index />
+          <Route element={<RawMaterialsPage />} path="raw-materials" />
+          <Route element={<ProductsPage />} path="products" />
+          <Route element={<ProductionPage />} path="production" />
+          <Route element={<Navigate replace to="/" />} path="*" />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "productId": 1,
+      "productName": "Electronic Component XYZ",
+      "productSku": "COMP-XYZ-001",
+      "quantity": 40,
+      "unitPrice": 29.99,
+      "totalValue": 1199.60
+    }
+  ],
+  "totalProductionValue": 1199.60,
+  "totalUnits": 40,
+  "remainingStock": {
+    "Carbon Steel Rod": 400,
+    "Copper Wire": 960
+  }
+}

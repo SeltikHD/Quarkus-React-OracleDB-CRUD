@@ -1,35 +1,48 @@
 /**
- * Home Page E2E Tests.
+ * Dashboard Page E2E Tests.
  *
- * These tests verify that the home page loads correctly
- * and displays the expected content.
+ * Verifies that the home/dashboard page loads correctly
+ * and navigation to sub-pages works.
  */
 
-describe('Home Page', () => {
+describe('Dashboard Page', () => {
   beforeEach(() => {
-    // Visit the home page before each test
     cy.visit('/');
   });
 
   it('should display the application title', () => {
-    cy.contains('h1', 'Welcome to Autoflex ERP').should('be.visible');
+    cy.contains('Autoflex ERP').should('be.visible');
   });
 
   it('should display the application description', () => {
     cy.contains('Product and Raw Material Management System').should('be.visible');
   });
 
-  it('should have the correct page title', () => {
-    cy.title().should('eq', 'Autoflex ERP');
+  it('should display three navigation cards', () => {
+    cy.contains('Raw Materials').should('be.visible');
+    cy.contains('Products').should('be.visible');
+    cy.contains('Production Planning').should('be.visible');
   });
 
-  it('should be responsive on mobile viewport', () => {
-    cy.viewport('iphone-x');
-    cy.contains('h1', 'Welcome to Autoflex ERP').should('be.visible');
+  it('should navigate to raw materials page', () => {
+    cy.mockRawMaterials();
+    cy.contains('Raw Materials').click();
+    cy.url().should('include', '/raw-materials');
   });
 
-  it('should be responsive on tablet viewport', () => {
-    cy.viewport('ipad-2');
-    cy.contains('h1', 'Welcome to Autoflex ERP').should('be.visible');
+  it('should navigate to products page', () => {
+    cy.mockProducts();
+    cy.mockRawMaterials();
+    cy.contains('Products').click();
+    cy.url().should('include', '/products');
+  });
+
+  it('should navigate to production page', () => {
+    cy.contains('Production Planning').click();
+    cy.url().should('include', '/production');
+  });
+
+  it('should have sidebar visible with navigation links', () => {
+    cy.get('nav').should('be.visible');
   });
 });

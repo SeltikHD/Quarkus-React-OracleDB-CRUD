@@ -1,61 +1,18 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-import type { IProduct, IProductRequest } from '@/types/product';
-
-/**
- * Axios instance configured for the Autoflex API.
- */
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-});
-
-// Request interceptor for adding auth headers, logging, etc.
-apiClient.interceptors.request.use(
-  (config) => {
-    // Add auth token if available
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
-  },
-  (error: Error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-      // Handle specific error cases
-      if (error.response?.status === 401) {
-        // Handle unauthorized - redirect to login, clear tokens, etc.
-        // window.location.href = '/login';
-      }
-
-      // Extract error message from response
-      const message =
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (error.response?.data?.message as string | undefined) ?? 'An unexpected error occurred';
-
-      return Promise.reject(new Error(message));
-    }
-
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-    return Promise.reject(new Error(errorMessage));
-  }
-);
+import type {
+  IBillOfMaterialItem,
+  IBillOfMaterialItemRequest,
+  IProduct,
+  IProductRequest,
+  IUpdateMaterialQuantityRequest,
+} from '@/types';
 
 /**
  * Product API service.
  *
- * Provides methods for interacting with the products endpoint.
+ * Provides methods for interacting with the products endpoint,
+ * including bill-of-materials management.
  */
 export const productApi = {
   /**
@@ -75,7 +32,7 @@ export const productApi = {
    * Fetch a single product by ID.
    */
   async getById(id: number): Promise<IProduct> {
-    const response = await apiClient.get<IProduct>(`/products/${id}`);
+    const response = await apiClient.get<IProduct>(`/products/${String(id)}`);
     return response.data;
   },
 
@@ -101,7 +58,7 @@ export const productApi = {
    * Update an existing product.
    */
   async update(id: number, product: IProductRequest): Promise<IProduct> {
-    const response = await apiClient.put<IProduct>(`/products/${id}`, product);
+    const response = await apiClient.put<IProduct>(`/products/${String(id)}`, product);
     return response.data;
   },
 
@@ -110,16 +67,63 @@ export const productApi = {
    */
   async delete(id: number, permanent = false): Promise<void> {
     const params = permanent ? '?permanent=true' : '';
-    await apiClient.delete(`/products/${id}${params}`);
+    await apiClient.delete(`/products/${String(id)}${params}`);
   },
 
   /**
    * Adjust product stock.
    */
   async adjustStock(id: number, delta: number): Promise<IProduct> {
-    const response = await apiClient.patch<IProduct>(`/products/${id}/stock?delta=${delta}`);
+    const response = await apiClient.patch<IProduct>(
+      `/products/${String(id)}/stock?delta=${String(delta)}`
+    );
     return response.data;
   },
-};
 
-export default apiClient;
+  // ==========================================================================
+  // BILL OF MATERIALS
+  // ==========================================================================
+
+  /**
+   * Get the bill of materials for a product.
+   */
+  async getMaterials(productId: number): Promise<IBillOfMaterialItem[]> {
+    const response = await apiClient.get<IBillOfMaterialItem[]>(
+      `/products/${String(productId)}/materials`
+    );
+    return response.data;
+  },
+
+  /**
+   * Add a material to a product's BOM.
+   */
+  async addMaterial(productId: number, request: IBillOfMaterialItemRequest): Promise<IProduct> {
+    const response = await apiClient.post<IProduct>(
+      `/products/${String(productId)}/materials`,
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Update a material quantity in a product's BOM.
+   */
+  async updateMaterialQuantity(
+    productId: number,
+    rawMaterialId: number,
+    request: IUpdateMaterialQuantityRequest
+  ): Promise<IProduct> {
+    const response = await apiClient.put<IProduct>(
+      `/products/${String(productId)}/materials/${String(rawMaterialId)}`,
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Remove a material from a product's BOM.
+   */
+  async removeMaterial(productId: number, rawMaterialId: number): Promise<void> {
+    await apiClient.delete(`/products/${String(productId)}/materials/${String(rawMaterialId)}`);
+  },
+};
