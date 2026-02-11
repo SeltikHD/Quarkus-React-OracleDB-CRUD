@@ -1,7 +1,11 @@
 package com.autoflex.infrastructure.rest.mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.autoflex.domain.model.product.Product;
 import com.autoflex.domain.port.in.ProductUseCase;
+import com.autoflex.infrastructure.rest.dto.BillOfMaterialItemResponse;
 import com.autoflex.infrastructure.rest.dto.ProductRequest;
 import com.autoflex.infrastructure.rest.dto.ProductResponse;
 
@@ -10,7 +14,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 /**
  * ProductRestMapper - Maps between REST DTOs and domain objects.
  *
- * <p>This mapper handles the translation layer between the REST API
+ * <p>
+ * This mapper handles the translation layer between the REST API
  * (HTTP world) and the domain layer (business world).
  */
 @ApplicationScoped
@@ -24,6 +29,12 @@ public class ProductRestMapper {
             return null;
         }
 
+        List<BillOfMaterialItemResponse> materials = product.getMaterials().stream()
+                .map(bom -> new BillOfMaterialItemResponse(
+                        bom.rawMaterialId().value(),
+                        bom.quantityRequired()))
+                .collect(Collectors.toList());
+
         return ProductResponse.builder()
                 .id(product.getId() != null ? product.getId().value() : null)
                 .name(product.getName())
@@ -34,6 +45,7 @@ public class ProductRestMapper {
                 .active(product.isActive())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
+                .materials(materials)
                 .build();
     }
 
@@ -46,8 +58,7 @@ public class ProductRestMapper {
                 request.getDescription(),
                 request.getSku(),
                 request.getUnitPrice(),
-                request.getStockQuantity() != null ? request.getStockQuantity() : 0
-        );
+                request.getStockQuantity() != null ? request.getStockQuantity() : 0);
     }
 
     /**
@@ -58,7 +69,6 @@ public class ProductRestMapper {
                 request.getName(),
                 request.getDescription(),
                 request.getSku(),
-                request.getUnitPrice()
-        );
+                request.getUnitPrice());
     }
 }
