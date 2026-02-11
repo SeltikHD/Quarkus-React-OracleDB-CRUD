@@ -93,8 +93,7 @@ class ProductionCalculatorTest {
               "50",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(steel));
 
       assertThat(plan.hasProduction()).isTrue();
       assertThat(plan.items()).hasSize(1);
@@ -122,8 +121,7 @@ class ProductionCalculatorTest {
                   BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10")),
                   BillOfMaterialItem.of(RawMaterialId.of(2L), new BigDecimal("5"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(steel, rubber));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(steel, rubber));
 
       assertThat(plan.items()).hasSize(1);
       // steel allows 10 units (100/10), rubber allows 6 units (30/5)
@@ -159,8 +157,7 @@ class ProductionCalculatorTest {
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
       ProductionPlan plan =
-          ProductionCalculator.calculate(
-              List.of(cheapProduct, expensiveProduct), List.of(steel));
+          ProductionCalculator.calculate(List.of(cheapProduct, expensiveProduct), List.of(steel));
 
       // Expensive product should be produced first (greedy)
       assertThat(plan.items()).hasSize(1);
@@ -195,8 +192,7 @@ class ProductionCalculatorTest {
               List.of(BillOfMaterialItem.of(RawMaterialId.of(2L), new BigDecimal("5"))));
 
       ProductionPlan plan =
-          ProductionCalculator.calculate(
-              List.of(productA, productB), List.of(steel, plastic));
+          ProductionCalculator.calculate(List.of(productA, productB), List.of(steel, plastic));
 
       // Both products can be produced (non-competing materials)
       assertThat(plan.items()).hasSize(2);
@@ -254,8 +250,7 @@ class ProductionCalculatorTest {
       RawMaterial steel = createRawMaterial(1, "Steel", "100");
       Product noBom = createProduct(1, "No BOM Product", "100", List.of());
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(noBom), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(noBom), List.of(steel));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -277,8 +272,7 @@ class ProductionCalculatorTest {
               LocalDateTime.now(),
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(inactive), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(inactive), List.of(steel));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -294,8 +288,7 @@ class ProductionCalculatorTest {
               "50",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(emptySteel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(emptySteel));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -311,8 +304,7 @@ class ProductionCalculatorTest {
               "50",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(steel));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -330,8 +322,7 @@ class ProductionCalculatorTest {
                   BillOfMaterialItem.of(
                       RawMaterialId.of(99L), new BigDecimal("10")))); // Material 99 not in stock
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(steel));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -347,8 +338,7 @@ class ProductionCalculatorTest {
               "50",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("30"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(steel));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(steel));
 
       // 100 / 30 = 3 units (uses 90 steel, 10 remaining)
       assertThat(plan.items().get(0).quantity()).isEqualTo(3);
@@ -391,8 +381,7 @@ class ProductionCalculatorTest {
               "60",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(2L), new BigDecimal("5"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(a, b), List.of(steel, plastic));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(a, b), List.of(steel, plastic));
 
       // A: 10 units, B: 10 units
       assertThat(plan.totalUnits()).isEqualTo(20);
@@ -409,8 +398,7 @@ class ProductionCalculatorTest {
               "200",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("2.5"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(door), List.of(paint));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(door), List.of(paint));
 
       // 10.5 / 2.5 = 4.2 -> floor to 4 units
       assertThat(plan.items().get(0).quantity()).isEqualTo(4);
@@ -442,8 +430,7 @@ class ProductionCalculatorTest {
               "50",
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("10"))));
 
-      ProductionPlan plan =
-          ProductionCalculator.calculate(List.of(widget), List.of(inactive));
+      ProductionPlan plan = ProductionCalculator.calculate(List.of(widget), List.of(inactive));
 
       assertThat(plan.hasProduction()).isFalse();
     }
@@ -478,8 +465,7 @@ class ProductionCalculatorTest {
               List.of(BillOfMaterialItem.of(RawMaterialId.of(1L), new BigDecimal("5"))));
 
       ProductionPlan plan =
-          ProductionCalculator.calculate(
-              List.of(budget, standard, premium), List.of(steel));
+          ProductionCalculator.calculate(List.of(budget, standard, premium), List.of(steel));
 
       // Premium first: 50/20 = 2 units (uses 40, 10 remaining)
       // Standard next: 10/10 = 1 unit (uses 10, 0 remaining)
@@ -522,8 +508,7 @@ class ProductionCalculatorTest {
                   BillOfMaterialItem.of(RawMaterialId.of(3L), new BigDecimal("10"))));
 
       ProductionPlan plan =
-          ProductionCalculator.calculate(
-              List.of(standard, luxury), List.of(steel, gold, plastic));
+          ProductionCalculator.calculate(List.of(standard, luxury), List.of(steel, gold, plastic));
 
       // Luxury first ($500): min(100/20=5, 10/5=2) = 2 units
       //   Uses: 40 steel, 10 gold. Remaining: 60 steel, 0 gold, 200 plastic

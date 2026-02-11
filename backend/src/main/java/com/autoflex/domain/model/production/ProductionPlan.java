@@ -8,33 +8,31 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * ProductionPlan - Value Object representing the result of a production
- * calculation.
+ * ProductionPlan - Value Object representing the result of a production calculation.
  *
- * <p>
- * Contains the list of products to produce, total production value,
- * and the remaining raw material stock after production.
+ * <p>Contains the list of products to produce, total production value, and the remaining raw
+ * material stock after production.
  */
 public record ProductionPlan(
-		List<ProductionPlanItem> items,
-		BigDecimal totalProductionValue,
-		Map<RawMaterialId, BigDecimal> remainingStock) {
+    List<ProductionPlanItem> items,
+    BigDecimal totalProductionValue,
+    Map<RawMaterialId, BigDecimal> remainingStock) {
 
-	public ProductionPlan {
-		Objects.requireNonNull(items, "Production plan items cannot be null");
-		Objects.requireNonNull(totalProductionValue, "Total production value cannot be null");
-		Objects.requireNonNull(remainingStock, "Remaining stock cannot be null");
-		items = Collections.unmodifiableList(items);
-		remainingStock = Collections.unmodifiableMap(remainingStock);
-	}
+  public ProductionPlan {
+    Objects.requireNonNull(items, "Production plan items cannot be null");
+    Objects.requireNonNull(totalProductionValue, "Total production value cannot be null");
+    Objects.requireNonNull(remainingStock, "Remaining stock cannot be null");
+    items = Collections.unmodifiableList(items);
+    remainingStock = Collections.unmodifiableMap(remainingStock);
+  }
 
-	/** Returns true if the plan has at least one item to produce. */
-	public boolean hasProduction() {
-		return !items.isEmpty();
-	}
+  /** Returns true if the plan has at least one item to produce. */
+  public boolean hasProduction() {
+    return !items.isEmpty();
+  }
 
-	/** Returns the total number of product units across all items. */
-	public int totalUnits() {
-		return items.stream().mapToInt(ProductionPlanItem::quantity).sum();
-	}
+  /** Returns the total number of product units across all items. */
+  public int totalUnits() {
+    return items.stream().mapToInt(ProductionPlanItem::quantity).sum();
+  }
 }

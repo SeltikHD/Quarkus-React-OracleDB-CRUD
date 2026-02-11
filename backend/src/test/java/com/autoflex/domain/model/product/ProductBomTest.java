@@ -73,8 +73,7 @@ class ProductBomTest {
     void shouldRejectNegativeQuantity() {
       Product product = Product.create("Widget", null, "SKU-001", BigDecimal.TEN, 0);
 
-      assertThatThrownBy(
-              () -> product.addMaterial(RawMaterialId.of(1L), new BigDecimal("-1")))
+      assertThatThrownBy(() -> product.addMaterial(RawMaterialId.of(1L), new BigDecimal("-1")))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("positive");
     }

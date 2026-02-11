@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.autoflex.domain.model.product.Product;
 import com.autoflex.domain.model.product.ProductId;
 import com.autoflex.domain.model.rawmaterial.RawMaterialId;
-import com.autoflex.domain.port.in.ProductUseCase;
 import com.autoflex.domain.port.in.ProductUseCase.AddMaterialCommand;
 import com.autoflex.domain.port.in.ProductUseCase.CreateProductCommand;
 import com.autoflex.domain.port.in.ProductUseCase.ProductNotFoundException;
@@ -73,8 +72,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("should reject duplicate SKU")
     void shouldRejectDuplicateSku() {
-      var command =
-          new CreateProductCommand("Widget", "A widget", "SKU-001", BigDecimal.TEN, 100);
+      var command = new CreateProductCommand("Widget", "A widget", "SKU-001", BigDecimal.TEN, 100);
       when(productRepository.existsBySku("SKU-001")).thenReturn(true);
 
       assertThatThrownBy(() -> productService.createProduct(command))
@@ -90,8 +88,7 @@ class ProductServiceTest {
 
     @BeforeEach
     void setUp() {
-      existingProduct =
-          Product.create("Widget", null, "SKU-001", BigDecimal.TEN, 100);
+      existingProduct = Product.create("Widget", null, "SKU-001", BigDecimal.TEN, 100);
     }
 
     @Test
@@ -99,16 +96,13 @@ class ProductServiceTest {
     void shouldAddMaterial() {
       when(productRepository.findById(any())).thenReturn(Optional.of(existingProduct));
       when(rawMaterialRepository.existsById(RawMaterialId.of(1L))).thenReturn(true);
-      when(productRepository.save(any(Product.class)))
-          .thenAnswer(inv -> inv.getArgument(0));
+      when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
       var command = new AddMaterialCommand(1L, new BigDecimal("5"));
-      Product result =
-          productService.addMaterialToProduct(ProductId.of(1L), command);
+      Product result = productService.addMaterialToProduct(ProductId.of(1L), command);
 
       assertThat(result.getMaterials()).hasSize(1);
-      assertThat(result.getMaterials().get(0).rawMaterialId())
-          .isEqualTo(RawMaterialId.of(1L));
+      assertThat(result.getMaterials().get(0).rawMaterialId()).isEqualTo(RawMaterialId.of(1L));
     }
 
     @Test
@@ -119,8 +113,7 @@ class ProductServiceTest {
 
       var command = new AddMaterialCommand(99L, new BigDecimal("5"));
 
-      assertThatThrownBy(
-              () -> productService.addMaterialToProduct(ProductId.of(1L), command))
+      assertThatThrownBy(() -> productService.addMaterialToProduct(ProductId.of(1L), command))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Raw material not found");
     }
@@ -132,8 +125,7 @@ class ProductServiceTest {
 
       var command = new AddMaterialCommand(1L, new BigDecimal("5"));
 
-      assertThatThrownBy(
-              () -> productService.addMaterialToProduct(ProductId.of(99L), command))
+      assertThatThrownBy(() -> productService.addMaterialToProduct(ProductId.of(99L), command))
           .isInstanceOf(ProductNotFoundException.class);
     }
 
@@ -142,11 +134,9 @@ class ProductServiceTest {
     void shouldRemoveMaterial() {
       existingProduct.addMaterial(RawMaterialId.of(1L), new BigDecimal("5"));
       when(productRepository.findById(any())).thenReturn(Optional.of(existingProduct));
-      when(productRepository.save(any(Product.class)))
-          .thenAnswer(inv -> inv.getArgument(0));
+      when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
-      Product result =
-          productService.removeMaterialFromProduct(ProductId.of(1L), 1L);
+      Product result = productService.removeMaterialFromProduct(ProductId.of(1L), 1L);
 
       assertThat(result.getMaterials()).isEmpty();
     }
@@ -156,12 +146,10 @@ class ProductServiceTest {
     void shouldUpdateMaterialQuantity() {
       existingProduct.addMaterial(RawMaterialId.of(1L), new BigDecimal("5"));
       when(productRepository.findById(any())).thenReturn(Optional.of(existingProduct));
-      when(productRepository.save(any(Product.class)))
-          .thenAnswer(inv -> inv.getArgument(0));
+      when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
       Product result =
-          productService.updateMaterialQuantity(
-              ProductId.of(1L), 1L, new BigDecimal("20"));
+          productService.updateMaterialQuantity(ProductId.of(1L), 1L, new BigDecimal("20"));
 
       assertThat(result.getMaterials().get(0).quantityRequired())
           .isEqualByComparingTo(new BigDecimal("20"));

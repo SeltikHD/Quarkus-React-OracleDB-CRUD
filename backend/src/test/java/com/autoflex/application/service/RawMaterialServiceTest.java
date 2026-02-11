@@ -131,12 +131,7 @@ class RawMaterialServiceTest {
     void shouldDeactivate() {
       RawMaterial existing =
           RawMaterial.create(
-              "Steel",
-              null,
-              "RM-001",
-              MeasurementUnit.KILOGRAM,
-              BigDecimal.ZERO,
-              BigDecimal.TEN);
+              "Steel", null, "RM-001", MeasurementUnit.KILOGRAM, BigDecimal.ZERO, BigDecimal.TEN);
 
       when(rawMaterialRepository.findById(any())).thenReturn(Optional.of(existing));
       when(rawMaterialRepository.save(any(RawMaterial.class)))

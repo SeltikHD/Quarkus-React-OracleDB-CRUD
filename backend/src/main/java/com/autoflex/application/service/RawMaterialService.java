@@ -12,106 +12,107 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * RawMaterialService - Application service implementing RawMaterialUseCase.
- * Orchestrates domain logic and calls output ports.
+ * RawMaterialService - Application service implementing RawMaterialUseCase. Orchestrates domain
+ * logic and calls output ports.
  */
 @ApplicationScoped
 public class RawMaterialService implements RawMaterialUseCase {
 
-	private final RawMaterialRepository rawMaterialRepository;
+  private final RawMaterialRepository rawMaterialRepository;
 
-	@Inject
-	public RawMaterialService(RawMaterialRepository rawMaterialRepository) {
-		this.rawMaterialRepository = rawMaterialRepository;
-	}
+  @Inject
+  public RawMaterialService(RawMaterialRepository rawMaterialRepository) {
+    this.rawMaterialRepository = rawMaterialRepository;
+  }
 
-	@Override
-	@Transactional
-	public RawMaterial createRawMaterial(CreateRawMaterialCommand command) {
-		if (rawMaterialRepository.existsByCode(command.code())) {
-			throw new RawMaterialCodeAlreadyExistsException(command.code());
-		}
-		RawMaterial rawMaterial = RawMaterial.create(
-				command.name(),
-				command.description(),
-				command.code(),
-				command.unit(),
-				command.stockQuantity(),
-				command.unitCost());
-		return rawMaterialRepository.save(rawMaterial);
-	}
+  @Override
+  @Transactional
+  public RawMaterial createRawMaterial(CreateRawMaterialCommand command) {
+    if (rawMaterialRepository.existsByCode(command.code())) {
+      throw new RawMaterialCodeAlreadyExistsException(command.code());
+    }
+    RawMaterial rawMaterial =
+        RawMaterial.create(
+            command.name(),
+            command.description(),
+            command.code(),
+            command.unit(),
+            command.stockQuantity(),
+            command.unitCost());
+    return rawMaterialRepository.save(rawMaterial);
+  }
 
-	@Override
-	@Transactional
-	public RawMaterial updateRawMaterial(RawMaterialId id, UpdateRawMaterialCommand command) {
-		RawMaterial rawMaterial = findRawMaterialOrThrow(id);
+  @Override
+  @Transactional
+  public RawMaterial updateRawMaterial(RawMaterialId id, UpdateRawMaterialCommand command) {
+    RawMaterial rawMaterial = findRawMaterialOrThrow(id);
 
-		Optional<RawMaterial> existingWithCode = rawMaterialRepository.findByCode(command.code());
-		if (existingWithCode.isPresent() && !existingWithCode.get().getId().equals(id)) {
-			throw new RawMaterialCodeAlreadyExistsException(command.code());
-		}
+    Optional<RawMaterial> existingWithCode = rawMaterialRepository.findByCode(command.code());
+    if (existingWithCode.isPresent() && !existingWithCode.get().getId().equals(id)) {
+      throw new RawMaterialCodeAlreadyExistsException(command.code());
+    }
 
-		rawMaterial.update(
-				command.name(), command.description(), command.code(), command.unit(), command.unitCost());
-		return rawMaterialRepository.save(rawMaterial);
-	}
+    rawMaterial.update(
+        command.name(), command.description(), command.code(), command.unit(), command.unitCost());
+    return rawMaterialRepository.save(rawMaterial);
+  }
 
-	@Override
-	@Transactional
-	public RawMaterial adjustStock(RawMaterialId id, BigDecimal delta) {
-		RawMaterial rawMaterial = findRawMaterialOrThrow(id);
-		rawMaterial.adjustStock(delta);
-		return rawMaterialRepository.save(rawMaterial);
-	}
+  @Override
+  @Transactional
+  public RawMaterial adjustStock(RawMaterialId id, BigDecimal delta) {
+    RawMaterial rawMaterial = findRawMaterialOrThrow(id);
+    rawMaterial.adjustStock(delta);
+    return rawMaterialRepository.save(rawMaterial);
+  }
 
-	@Override
-	@Transactional
-	public void deactivateRawMaterial(RawMaterialId id) {
-		RawMaterial rawMaterial = findRawMaterialOrThrow(id);
-		rawMaterial.deactivate();
-		rawMaterialRepository.save(rawMaterial);
-	}
+  @Override
+  @Transactional
+  public void deactivateRawMaterial(RawMaterialId id) {
+    RawMaterial rawMaterial = findRawMaterialOrThrow(id);
+    rawMaterial.deactivate();
+    rawMaterialRepository.save(rawMaterial);
+  }
 
-	@Override
-	@Transactional
-	public void deleteRawMaterial(RawMaterialId id) {
-		if (!rawMaterialRepository.existsById(id)) {
-			throw new RawMaterialNotFoundException(id);
-		}
-		rawMaterialRepository.deleteById(id);
-	}
+  @Override
+  @Transactional
+  public void deleteRawMaterial(RawMaterialId id) {
+    if (!rawMaterialRepository.existsById(id)) {
+      throw new RawMaterialNotFoundException(id);
+    }
+    rawMaterialRepository.deleteById(id);
+  }
 
-	@Override
-	public RawMaterial getRawMaterialById(RawMaterialId id) {
-		return findRawMaterialOrThrow(id);
-	}
+  @Override
+  public RawMaterial getRawMaterialById(RawMaterialId id) {
+    return findRawMaterialOrThrow(id);
+  }
 
-	@Override
-	public Optional<RawMaterial> getRawMaterialByCode(String code) {
-		return rawMaterialRepository.findByCode(code);
-	}
+  @Override
+  public Optional<RawMaterial> getRawMaterialByCode(String code) {
+    return rawMaterialRepository.findByCode(code);
+  }
 
-	@Override
-	public List<RawMaterial> listActiveRawMaterials() {
-		return rawMaterialRepository.findAllActive();
-	}
+  @Override
+  public List<RawMaterial> listActiveRawMaterials() {
+    return rawMaterialRepository.findAllActive();
+  }
 
-	@Override
-	public List<RawMaterial> listAllRawMaterials() {
-		return rawMaterialRepository.findAll();
-	}
+  @Override
+  public List<RawMaterial> listAllRawMaterials() {
+    return rawMaterialRepository.findAll();
+  }
 
-	@Override
-	public List<RawMaterial> searchRawMaterials(String searchTerm) {
-		if (searchTerm == null || searchTerm.isBlank()) {
-			return rawMaterialRepository.findAllActive();
-		}
-		return rawMaterialRepository.findByNameContaining(searchTerm.trim());
-	}
+  @Override
+  public List<RawMaterial> searchRawMaterials(String searchTerm) {
+    if (searchTerm == null || searchTerm.isBlank()) {
+      return rawMaterialRepository.findAllActive();
+    }
+    return rawMaterialRepository.findByNameContaining(searchTerm.trim());
+  }
 
-	private RawMaterial findRawMaterialOrThrow(RawMaterialId id) {
-		return rawMaterialRepository
-				.findById(id)
-				.orElseThrow(() -> new RawMaterialNotFoundException(id));
-	}
+  private RawMaterial findRawMaterialOrThrow(RawMaterialId id) {
+    return rawMaterialRepository
+        .findById(id)
+        .orElseThrow(() -> new RawMaterialNotFoundException(id));
+  }
 }

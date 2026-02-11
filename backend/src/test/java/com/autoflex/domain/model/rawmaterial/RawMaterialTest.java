@@ -142,7 +142,12 @@ class RawMaterialTest {
     void shouldIncreaseStock() {
       RawMaterial rm =
           RawMaterial.create(
-              "Steel", null, "RM-001", MeasurementUnit.KILOGRAM, new BigDecimal("100"), BigDecimal.TEN);
+              "Steel",
+              null,
+              "RM-001",
+              MeasurementUnit.KILOGRAM,
+              new BigDecimal("100"),
+              BigDecimal.TEN);
       rm.adjustStock(new BigDecimal("50.5"));
       assertThat(rm.getStockQuantity()).isEqualByComparingTo(new BigDecimal("150.5"));
     }
@@ -152,7 +157,12 @@ class RawMaterialTest {
     void shouldDecreaseStock() {
       RawMaterial rm =
           RawMaterial.create(
-              "Steel", null, "RM-001", MeasurementUnit.KILOGRAM, new BigDecimal("100"), BigDecimal.TEN);
+              "Steel",
+              null,
+              "RM-001",
+              MeasurementUnit.KILOGRAM,
+              new BigDecimal("100"),
+              BigDecimal.TEN);
       rm.adjustStock(new BigDecimal("-30.25"));
       assertThat(rm.getStockQuantity()).isEqualByComparingTo(new BigDecimal("69.75"));
     }
@@ -162,7 +172,12 @@ class RawMaterialTest {
     void shouldRejectStockBelowZero() {
       RawMaterial rm =
           RawMaterial.create(
-              "Steel", null, "RM-001", MeasurementUnit.KILOGRAM, new BigDecimal("50"), BigDecimal.TEN);
+              "Steel",
+              null,
+              "RM-001",
+              MeasurementUnit.KILOGRAM,
+              new BigDecimal("50"),
+              BigDecimal.TEN);
       assertThatThrownBy(() -> rm.adjustStock(new BigDecimal("-51")))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("below zero");
@@ -173,7 +188,12 @@ class RawMaterialTest {
     void shouldCheckSufficientStock() {
       RawMaterial rm =
           RawMaterial.create(
-              "Steel", null, "RM-001", MeasurementUnit.KILOGRAM, new BigDecimal("100"), BigDecimal.TEN);
+              "Steel",
+              null,
+              "RM-001",
+              MeasurementUnit.KILOGRAM,
+              new BigDecimal("100"),
+              BigDecimal.TEN);
       assertThat(rm.hasSufficientStock(new BigDecimal("100"))).isTrue();
       assertThat(rm.hasSufficientStock(new BigDecimal("99.99"))).isTrue();
       assertThat(rm.hasSufficientStock(new BigDecimal("100.01"))).isFalse();
@@ -211,7 +231,12 @@ class RawMaterialTest {
     void shouldUpdate() {
       RawMaterial rm =
           RawMaterial.create(
-              "Original", "Desc", "RM-001", MeasurementUnit.KILOGRAM, BigDecimal.ZERO, BigDecimal.TEN);
+              "Original",
+              "Desc",
+              "RM-001",
+              MeasurementUnit.KILOGRAM,
+              BigDecimal.ZERO,
+              BigDecimal.TEN);
       rm.update("Updated", "New Desc", "RM-002", MeasurementUnit.LITER, new BigDecimal("20"));
 
       assertThat(rm.getName()).isEqualTo("Updated");

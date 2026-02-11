@@ -12,27 +12,26 @@ import jakarta.inject.Inject;
 import java.util.List;
 
 /**
- * ProductionService - Application service implementing ProductionUseCase.
- * Coordinates between Product and RawMaterial repositories to run the
- * Greedy Production Calculation Algorithm.
+ * ProductionService - Application service implementing ProductionUseCase. Coordinates between
+ * Product and RawMaterial repositories to run the Greedy Production Calculation Algorithm.
  */
 @ApplicationScoped
 public class ProductionService implements ProductionUseCase {
 
-	private final ProductRepository productRepository;
-	private final RawMaterialRepository rawMaterialRepository;
+  private final ProductRepository productRepository;
+  private final RawMaterialRepository rawMaterialRepository;
 
-	@Inject
-	public ProductionService(
-			ProductRepository productRepository, RawMaterialRepository rawMaterialRepository) {
-		this.productRepository = productRepository;
-		this.rawMaterialRepository = rawMaterialRepository;
-	}
+  @Inject
+  public ProductionService(
+      ProductRepository productRepository, RawMaterialRepository rawMaterialRepository) {
+    this.productRepository = productRepository;
+    this.rawMaterialRepository = rawMaterialRepository;
+  }
 
-	@Override
-	public ProductionPlan calculateProductionPlan() {
-		List<Product> activeProducts = productRepository.findAllActiveWithMaterials();
-		List<RawMaterial> activeRawMaterials = rawMaterialRepository.findAllActive();
-		return ProductionCalculator.calculate(activeProducts, activeRawMaterials);
-	}
+  @Override
+  public ProductionPlan calculateProductionPlan() {
+    List<Product> activeProducts = productRepository.findAllActiveWithMaterials();
+    List<RawMaterial> activeRawMaterials = rawMaterialRepository.findAllActive();
+    return ProductionCalculator.calculate(activeProducts, activeRawMaterials);
+  }
 }
