@@ -2,37 +2,46 @@ package com.autoflex.infrastructure.persistence.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 /**
  * ProductJpaEntity - JPA Entity for Product persistence.
  *
- * <p><b>HEXAGONAL ARCHITECTURE:</b>
+ * <p>
+ * <b>HEXAGONAL ARCHITECTURE:</b>
  * This is an INFRASTRUCTURE concern, NOT a domain entity.
  * It exists purely to map to the database schema.
  *
- * <p><b>IMPORTANT DISTINCTION:</b>
+ * <p>
+ * <b>IMPORTANT DISTINCTION:</b>
  * <ul>
- *   <li>{@code Product} (domain) - Pure business logic, no annotations</li>
- *   <li>{@code ProductJpaEntity} (infrastructure) - JPA mapping, no business logic</li>
+ * <li>{@code Product} (domain) - Pure business logic, no annotations</li>
+ * <li>{@code ProductJpaEntity} (infrastructure) - JPA mapping, no business
+ * logic</li>
  * </ul>
  *
- * <p>The repository adapter handles conversion between these two classes.
+ * <p>
+ * The repository adapter handles conversion between these two classes.
  */
 @Entity
-@Table(name = "PRODUCTS", schema = "AUTOFLEX")
+@Table(name = "PRODUCTS")
 public class ProductJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
-    @SequenceGenerator(name = "product_seq", sequenceName = "AUTOFLEX.PRODUCT_SEQ", allocationSize = 1)
+    @SequenceGenerator(name = "product_seq", sequenceName = "PRODUCT_SEQ", allocationSize = 1)
     @Column(name = "ID")
     private Long id;
 
@@ -59,6 +68,9 @@ public class ProductJpaEntity {
 
     @Column(name = "UPDATED_AT", nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ProductMaterialJpaEntity> materials = new ArrayList<>();
 
     // =========================================================================
     // CONSTRUCTORS
@@ -142,5 +154,13 @@ public class ProductJpaEntity {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<ProductMaterialJpaEntity> getMaterials() {
+        return materials;
+    }
+
+    public void setMaterials(List<ProductMaterialJpaEntity> materials) {
+        this.materials = materials;
     }
 }

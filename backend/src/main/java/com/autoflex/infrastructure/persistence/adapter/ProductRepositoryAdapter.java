@@ -8,6 +8,7 @@ import com.autoflex.domain.model.product.Product;
 import com.autoflex.domain.model.product.ProductId;
 import com.autoflex.domain.port.out.ProductRepository;
 import com.autoflex.infrastructure.persistence.entity.ProductJpaEntity;
+import com.autoflex.infrastructure.persistence.entity.ProductMaterialJpaEntity;
 import com.autoflex.infrastructure.persistence.mapper.ProductMapper;
 import com.autoflex.infrastructure.persistence.repository.ProductPanacheRepository;
 
@@ -15,17 +16,23 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * ProductRepositoryAdapter - Infrastructure adapter implementing the domain's ProductRepository port.
+ * ProductRepositoryAdapter - Infrastructure adapter implementing the domain's
+ * ProductRepository port.
  *
- * <p><b>HEXAGONAL ARCHITECTURE:</b>
- * This is an OUTPUT ADAPTER (also called "driven adapter" or "secondary adapter").
- * It implements the domain's output port using infrastructure technology (JPA/Panache).
+ * <p>
+ * <b>HEXAGONAL ARCHITECTURE:</b>
+ * This is an OUTPUT ADAPTER (also called "driven adapter" or "secondary
+ * adapter").
+ * It implements the domain's output port using infrastructure technology
+ * (JPA/Panache).
  *
- * <p><b>RESPONSIBILITIES:</b>
+ * <p>
+ * <b>RESPONSIBILITIES:</b>
  * <ul>
- *   <li>Implement the domain's repository interface</li>
- *   <li>Map between domain entities and JPA entities</li>
- *   <li>Handle JPA-specific concerns (transactions are managed by the service layer)</li>
+ * <li>Implement the domain's repository interface</li>
+ * <li>Map between domain entities and JPA entities</li>
+ * <li>Handle JPA-specific concerns (transactions are managed by the service
+ * layer)</li>
  * </ul>
  */
 @ApplicationScoped
@@ -44,16 +51,43 @@ public class ProductRepositoryAdapter implements ProductRepository {
 
     @Override
     public Product save(Product product) {
-        ProductJpaEntity entity = mapper.toJpaEntity(product);
-        
-        if (entity.getId() == null) {
-            // New entity
+        ProductJpaEntity entity;
+
+        if (product.getId() == null) {
+            // New entity - create from mapper and persist
+            entity = mapper.toJpaEntity(product);
             panacheRepository.persist(entity);
         } else {
-            // Existing entity - merge
-            entity = panacheRepository.getEntityManager().merge(entity);
+            // Existing entity - find the managed instance and update in place
+            entity = panacheRepository.findById(product.getId().value());
+            if (entity == null) {
+                throw new IllegalStateException(
+                        "Product not found for update: " + product.getId().value());
+            }
+
+            // Update scalar fields on the managed entity
+            entity.setName(product.getName());
+            entity.setDescription(product.getDescription());
+            entity.setSku(product.getSku());
+            entity.setUnitPrice(product.getUnitPrice());
+            entity.setStockQuantity(product.getStockQuantity());
+            entity.setActive(product.isActive());
+            entity.setUpdatedAt(product.getUpdatedAt());
+
+            // Sync materials collection: clear existing and re-add from domain model.
+            // orphanRemoval = true ensures removed children are deleted from DB.
+            entity.getMaterials().clear();
+            panacheRepository.getEntityManager().flush();
+
+            product.getMaterials().forEach(bom -> {
+                ProductMaterialJpaEntity materialEntity = new ProductMaterialJpaEntity(
+                        entity,
+                        bom.rawMaterialId().value(),
+                        bom.quantityRequired());
+                entity.getMaterials().add(materialEntity);
+            });
         }
-        
+
         return mapper.toDomain(entity);
     }
 
@@ -109,5 +143,20 @@ public class ProductRepositoryAdapter implements ProductRepository {
     @Override
     public boolean existsById(ProductId id) {
         return panacheRepository.findByIdOptional(id.value()).isPresent();
+    }
+
+    @Override
+    public List<Product> findAllActiveWithMaterials() {
+        // Use a fetch join to eagerly load materials and avoid N+1 queries
+        return panacheRepository.getEntityManager()
+                .createQuery(
+                        "SELECT DISTINCT p FROM ProductJpaEntity p "
+                                + "LEFT JOIN FETCH p.materials "
+                                + "WHERE p.active = true",
+                        ProductJpaEntity.class)
+                .getResultList()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

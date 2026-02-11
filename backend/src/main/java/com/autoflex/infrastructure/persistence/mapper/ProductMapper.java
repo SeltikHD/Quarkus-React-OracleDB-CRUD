@@ -1,19 +1,28 @@
 package com.autoflex.infrastructure.persistence.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.autoflex.domain.model.product.BillOfMaterialItem;
 import com.autoflex.domain.model.product.Product;
 import com.autoflex.domain.model.product.ProductId;
+import com.autoflex.domain.model.rawmaterial.RawMaterialId;
 import com.autoflex.infrastructure.persistence.entity.ProductJpaEntity;
+import com.autoflex.infrastructure.persistence.entity.ProductMaterialJpaEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * ProductMapper - Maps between domain Product and JPA ProductJpaEntity.
  *
- * <p><b>HEXAGONAL ARCHITECTURE:</b>
+ * <p>
+ * <b>HEXAGONAL ARCHITECTURE:</b>
  * This mapper is part of the infrastructure layer and handles the translation
  * between the pure domain model and the JPA persistence model.
  *
- * <p><b>KEY RESPONSIBILITY:</b>
+ * <p>
+ * <b>KEY RESPONSIBILITY:</b>
  * Keep the domain model completely free of JPA annotations by providing
  * explicit mapping logic here.
  */
@@ -31,6 +40,15 @@ public class ProductMapper {
             return null;
         }
 
+        List<BillOfMaterialItem> materials = new ArrayList<>();
+        if (entity.getMaterials() != null) {
+            materials = entity.getMaterials().stream()
+                    .map(m -> BillOfMaterialItem.of(
+                            RawMaterialId.of(m.getRawMaterialId()),
+                            m.getQuantityRequired()))
+                    .collect(Collectors.toList());
+        }
+
         return Product.reconstitute(
                 entity.getId() != null ? ProductId.of(entity.getId()) : null,
                 entity.getName(),
@@ -40,8 +58,8 @@ public class ProductMapper {
                 entity.getStockQuantity(),
                 entity.getActive() != null && entity.getActive(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+                entity.getUpdatedAt(),
+                materials);
     }
 
     /**
@@ -56,12 +74,12 @@ public class ProductMapper {
         }
 
         ProductJpaEntity entity = new ProductJpaEntity();
-        
+
         // Only set ID if the product has been persisted before
         if (product.getId() != null) {
             entity.setId(product.getId().value());
         }
-        
+
         entity.setName(product.getName());
         entity.setDescription(product.getDescription());
         entity.setSku(product.getSku());
@@ -70,6 +88,15 @@ public class ProductMapper {
         entity.setActive(product.isActive());
         entity.setCreatedAt(product.getCreatedAt());
         entity.setUpdatedAt(product.getUpdatedAt());
+
+        // Map bill of materials
+        List<ProductMaterialJpaEntity> materialEntities = product.getMaterials().stream()
+                .map(bom -> new ProductMaterialJpaEntity(
+                        entity,
+                        bom.rawMaterialId().value(),
+                        bom.quantityRequired()))
+                .collect(Collectors.toList());
+        entity.setMaterials(materialEntities);
 
         return entity;
     }
