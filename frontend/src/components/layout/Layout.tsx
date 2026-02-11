@@ -1,6 +1,8 @@
+import { useCallback, useState } from 'react';
+
 import type { ReactElement } from 'react';
 
-import { Box, Toolbar } from '@mui/material';
+import { Box, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import Navbar from './Navbar';
@@ -23,22 +25,32 @@ function getPageTitle(pathname: string): string {
 }
 
 /**
- * Main application layout with persistent sidebar and top navbar.
+ * Main application layout with responsive sidebar and top navbar.
+ *
+ * Desktop (md+): Sidebar is permanent/docked.
+ * Mobile (<md): Sidebar is temporary, toggled via hamburger menu.
  */
 function Layout(): ReactElement {
   const location = useLocation();
   const title = getPageTitle(location.pathname);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = useCallback((): void => {
+    setMobileOpen((prev) => !prev);
+  }, []);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar />
-      <Navbar title={title} />
+      <Sidebar mobileOpen={mobileOpen} onToggle={handleDrawerToggle} />
+      <Navbar title={title} onMenuToggle={handleDrawerToggle} />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          width: `calc(100% - ${String(DRAWER_WIDTH)}px)`,
+          width: isMobile ? '100%' : `calc(100% - ${String(DRAWER_WIDTH)}px)`,
           bgcolor: 'background.default',
         }}
       >

@@ -181,7 +181,7 @@ describe('Products Management', () => {
       cy.getByTestId('product-row-1').within(() => {
         cy.getByTestId('manage-bom-btn').click();
       });
-      cy.contains('Current Materials (2)').should('be.visible');
+      cy.getByTestId('bom-drawer').contains('Current Materials (2)').should('be.visible');
     });
 
     it('should add a material to BOM', () => {
@@ -211,19 +211,19 @@ describe('Products Management', () => {
       cy.wait('@getRawMaterials');
 
       // Select a raw material and set quantity
-      cy.get('.MuiDrawer-root').within(() => {
+      cy.getByTestId('bom-drawer').within(() => {
         cy.contains('label', 'Raw Material')
           .parent()
           .find('[role="combobox"]')
           .click();
       });
       cy.get('[role="listbox"]').contains('Carbon Steel Rod').click();
-      cy.get('.MuiDrawer-root').within(() => {
+      cy.getByTestId('bom-drawer').within(() => {
         cy.contains('label', 'Qty').parent().find('input').clear().type('3');
       });
 
       // Click add button
-      cy.get('[title="Add to BOM"]').click();
+      cy.getByTestId('add-to-bom-btn').click();
       cy.wait('@addMaterial');
       cy.contains('Material added to BOM').should('be.visible');
     });
@@ -241,7 +241,7 @@ describe('Products Management', () => {
       cy.wait('@getRawMaterials');
 
       // Click remove on first material
-      cy.get('.MuiDrawer-root [title="Remove material"]').first().click();
+      cy.getByTestId('bom-drawer').find('[data-testid="remove-material-btn"]').first().click();
       cy.wait('@removeMaterial');
       cy.contains('Material removed from BOM').should('be.visible');
     });
@@ -250,8 +250,8 @@ describe('Products Management', () => {
       cy.getByTestId('product-row-1').within(() => {
         cy.getByTestId('manage-bom-btn').click();
       });
-      cy.get('.MuiDrawer-root').contains('button', 'Close').click();
-      cy.get('.MuiDrawer-root').should('not.exist');
+      cy.getByTestId('bom-drawer').contains('button', 'Close').click();
+      cy.getByTestId('bom-drawer').should('not.exist');
     });
   });
 });

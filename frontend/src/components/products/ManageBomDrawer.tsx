@@ -117,6 +117,7 @@ function ManageBomDrawer({
   return (
     <Drawer
       anchor="right"
+      data-testid="bom-drawer"
       open={open}
       sx={{ '& .MuiDrawer-paper': { width: DRAWER_WIDTH } }}
       onClose={onClose}
@@ -186,6 +187,7 @@ function ManageBomDrawer({
                 <span>
                   <IconButton
                     color="primary"
+                    data-testid="add-to-bom-btn"
                     disabled={selectedMaterialId === ''}
                     onClick={handleAddMaterial}
                   >
@@ -233,6 +235,7 @@ function ManageBomDrawer({
                           <Tooltip title="Remove material">
                             <IconButton
                               color="error"
+                              data-testid="remove-material-btn"
                               size="small"
                               onClick={() => {
                                 handleRemoveMaterial(bom.rawMaterialId);

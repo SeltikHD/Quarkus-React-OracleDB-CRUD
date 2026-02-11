@@ -14,6 +14,8 @@ import {
   Typography,
   Box,
   Divider,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -31,23 +33,19 @@ const NAV_ITEMS: INavItem[] = [
   { label: 'Production Planning', path: '/production', icon: <PrecisionManufacturingIcon /> },
 ];
 
-function Sidebar(): ReactElement {
+interface ISidebarProps {
+  mobileOpen: boolean;
+  onToggle: () => void;
+}
+
+function Sidebar({ mobileOpen, onToggle }: ISidebarProps): ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  return (
-    <Drawer
-      sx={{
-        width: DRAWER_WIDTH,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: DRAWER_WIDTH,
-          boxSizing: 'border-box',
-          bgcolor: 'background.paper',
-        },
-      }}
-      variant="permanent"
-    >
+  const drawerContent = (
+    <>
       <Toolbar sx={{ gap: 1 }}>
         <FactoryIcon color="primary" />
         <Typography color="primary" fontWeight={700} noWrap variant="h6">
@@ -74,8 +72,11 @@ function Sidebar(): ReactElement {
                     '&:hover': { bgcolor: 'primary.dark' },
                   },
                 }}
-                onClick={async () => {
-                  await navigate(item.path);
+                onClick={() => {
+                  void navigate(item.path);
+                  if (isMobile) {
+                    onToggle();
+                  }
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
@@ -85,6 +86,26 @@ function Sidebar(): ReactElement {
           })}
         </List>
       </Box>
+    </>
+  );
+
+  return (
+    <Drawer
+      component="nav"
+      open={isMobile ? mobileOpen : true}
+      sx={{
+        width: DRAWER_WIDTH,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: DRAWER_WIDTH,
+          boxSizing: 'border-box',
+          bgcolor: 'background.paper',
+        },
+      }}
+      variant={isMobile ? 'temporary' : 'permanent'}
+      onClose={onToggle}
+    >
+      {drawerContent}
     </Drawer>
   );
 }

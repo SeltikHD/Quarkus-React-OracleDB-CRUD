@@ -97,7 +97,7 @@ describe('Production Planning', () => {
 
   describe('Empty Production Plan', () => {
     it('should show a warning when no products can be produced', () => {
-      cy.intercept('GET', '**/api/v1/production/plan', {
+      cy.intercept('POST', '**/api/v1/production/calculate', {
         statusCode: 200,
         body: {
           items: [],

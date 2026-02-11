@@ -167,7 +167,7 @@ describe('Happy Path — Full User Journey', () => {
     cy.wait('@getMaterialsForBom');
 
     // Select the raw material
-    cy.get('.MuiDrawer-root').within(() => {
+    cy.getByTestId('bom-drawer').within(() => {
       cy.contains('label', 'Raw Material')
         .parent()
         .find('[role="combobox"]')
@@ -176,11 +176,11 @@ describe('Happy Path — Full User Journey', () => {
     cy.get('[role="listbox"]').contains('Aluminum Sheet').click();
 
     // Set quantity
-    cy.get('.MuiDrawer-root').within(() => {
+    cy.getByTestId('bom-drawer').within(() => {
       cy.contains('label', 'Qty').parent().find('input').clear().type('2');
     });
 
-    cy.get('[title="Add to BOM"]').click();
+    cy.getByTestId('add-to-bom-btn').click();
     cy.wait('@addMaterialToBom');
     cy.contains('Material added to BOM').should('be.visible');
 
