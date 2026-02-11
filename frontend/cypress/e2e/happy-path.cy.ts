@@ -25,7 +25,7 @@ describe('Happy Path — Full User Journey', () => {
     name: 'Aluminum Housing',
     description: 'Protective housing for sensors',
     sku: 'HSG-ALU-003',
-    unitPrice: 85.0,
+    unitPrice: 85,
     stockQuantity: 0,
     active: true,
     createdAt: '2026-02-01T11:00:00',
@@ -35,7 +35,7 @@ describe('Happy Path — Full User Journey', () => {
 
   const productWithBom = {
     ...newProduct,
-    materials: [{ rawMaterialId: 4, quantityRequired: 2.0 }],
+    materials: [{ rawMaterialId: 4, quantityRequired: 2 }],
     updatedAt: '2026-02-01T12:00:00',
   };
 
@@ -46,11 +46,11 @@ describe('Happy Path — Full User Journey', () => {
         productName: 'Aluminum Housing',
         productSku: 'HSG-ALU-003',
         quantity: 50,
-        unitPrice: 85.0,
-        totalValue: 4250.0,
+        unitPrice: 85,
+        totalValue: 4250,
       },
     ],
-    totalProductionValue: 4250.0,
+    totalProductionValue: 4250,
     totalUnits: 50,
     remainingStock: {
       'Aluminum Sheet': 0,
@@ -168,10 +168,7 @@ describe('Happy Path — Full User Journey', () => {
 
     // Select the raw material
     cy.getByTestId('bom-drawer').within(() => {
-      cy.contains('label', 'Raw Material')
-        .parent()
-        .find('[role="combobox"]')
-        .click();
+      cy.contains('label', 'Raw Material').parent().find('[role="combobox"]').click();
     });
     cy.get('[role="listbox"]').contains('Aluminum Sheet').click();
 
@@ -200,7 +197,7 @@ describe('Happy Path — Full User Journey', () => {
     // -------------------------------------------------------
     // Step 6: Verify Results
     // -------------------------------------------------------
-    cy.contains('$4,250.00').should('be.visible');
+    cy.contains('$4,2500').should('be.visible');
     cy.contains('50').should('be.visible');
     cy.contains('Aluminum Housing').should('be.visible');
     cy.contains('HSG-ALU-003').should('be.visible');
@@ -224,7 +221,7 @@ describe('CRUD Check', () => {
       updatedAt: '2026-02-02T10:00:00',
       materials: [
         { rawMaterialId: 1, quantityRequired: 2.5 },
-        { rawMaterialId: 2, quantityRequired: 1.0 },
+        { rawMaterialId: 2, quantityRequired: 1 },
       ],
     };
 

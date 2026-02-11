@@ -49,7 +49,7 @@ function ManageBomDrawer({
   onClose,
   onSuccess,
   onError,
-}: IManageBomDrawerProps): ReactElement {
+}: Readonly<IManageBomDrawerProps>): ReactElement {
   const dispatch = useAppDispatch();
   const rawMaterials = useAppSelector((state) => state.rawMaterials.items);
 
@@ -77,8 +77,8 @@ function ManageBomDrawer({
       return;
     }
 
-    const rawMaterialId = parseInt(selectedMaterialId, 10);
-    const quantityRequired = parseFloat(quantity) || 1;
+    const rawMaterialId = Number.parseInt(selectedMaterialId, 10);
+    const quantityRequired = Number.parseFloat(quantity) || 1;
 
     void dispatch(
       addMaterialToProduct({

@@ -38,7 +38,7 @@ interface ISidebarProps {
   onToggle: () => void;
 }
 
-function Sidebar({ mobileOpen, onToggle }: ISidebarProps): ReactElement {
+function Sidebar({ mobileOpen, onToggle }: Readonly<ISidebarProps>): ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();

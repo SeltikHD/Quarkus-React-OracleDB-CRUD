@@ -48,7 +48,7 @@ function DashboardPage(): ReactElement {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <FactoryIcon color="primary" sx={{ fontSize: 40 }} />
           <Typography component="h2" fontWeight={700} variant="h4">
-            Autoflex ERP
+            Autoflex
           </Typography>
         </Box>
         <Typography color="text.secondary" variant="body1">

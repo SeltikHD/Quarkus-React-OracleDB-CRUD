@@ -51,7 +51,7 @@ describe('Products Management', () => {
         name: 'Motor Assembly',
         description: 'Electric motor for conveyor systems',
         sku: 'MTR-ASM-003',
-        unitPrice: 250.00,
+        unitPrice: 2500,
         stockQuantity: 10,
         active: true,
         createdAt: '2026-02-01T10:00:00',
@@ -113,7 +113,7 @@ describe('Products Management', () => {
         updatedAt: '2026-02-01T12:00:00',
         materials: [
           { rawMaterialId: 1, quantityRequired: 2.5 },
-          { rawMaterialId: 2, quantityRequired: 1.0 },
+          { rawMaterialId: 2, quantityRequired: 1 },
         ],
       };
 
@@ -190,12 +190,12 @@ describe('Products Management', () => {
         name: 'Industrial Sensor ABC',
         description: 'Precision sensor for manufacturing processes',
         sku: 'SENS-ABC-002',
-        unitPrice: 149.50,
+        unitPrice: 149.5,
         stockQuantity: 50,
         active: true,
         createdAt: '2026-01-14T09:15:00',
         updatedAt: '2026-02-01T12:00:00',
-        materials: [{ rawMaterialId: 1, quantityRequired: 3.0 }],
+        materials: [{ rawMaterialId: 1, quantityRequired: 3 }],
       };
 
       cy.intercept('POST', '**/api/v1/products/2/materials', {

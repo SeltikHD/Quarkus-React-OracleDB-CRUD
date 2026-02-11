@@ -19,7 +19,7 @@ interface INavbarProps {
   onMenuToggle: () => void;
 }
 
-function Navbar({ title, onMenuToggle }: INavbarProps): ReactElement {
+function Navbar({ title, onMenuToggle }: Readonly<INavbarProps>): ReactElement {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
