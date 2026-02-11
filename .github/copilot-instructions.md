@@ -9,13 +9,16 @@ This document provides guidelines for AI assistants (GitHub Copilot, Claude, etc
 ## 🎯 Core Principles
 
 ### 1. Certainty Before Code
+
 - **Only provide code if you are 95% confident it is correct.**
 - If requirements are ambiguous, **ask clarifying questions first.**
 - When multiple valid approaches exist, briefly explain the trade-offs before proceeding.
 - Never guess database schemas, API contracts, or business rules.
 
 ### 2. Explain Before Complex Logic
+
 For algorithms or complex business logic (e.g., production calculations, inventory management):
+
 1. **Describe the algorithm in plain English first.**
 2. Outline the inputs, outputs, and edge cases.
 3. Only then provide the implementation.
@@ -29,6 +32,7 @@ For algorithms or complex business logic (e.g., production calculations, invento
 The domain layer is the **sacred core** of the application. It contains pure business logic with **ZERO framework dependencies**.
 
 #### ✅ ALLOWED in Domain Objects:
+
 ```java
 // Pure Java only
 import java.math.BigDecimal;
@@ -38,6 +42,7 @@ import java.util.List;
 ```
 
 #### ❌ FORBIDDEN in Domain Objects:
+
 ```java
 // JPA Annotations - NEVER use these in domain entities
 import jakarta.persistence.*;  // ❌ FORBIDDEN
@@ -54,29 +59,30 @@ import jakarta.validation.constraints.*; // ❌ FORBIDDEN in domain
 ```
 
 #### Domain Entity Pattern:
+
 ```java
 // ✅ CORRECT: Pure domain entity
 public class Product {
     private final ProductId id;
     private String name;
-    
+
     // Factory method for creation
     public static Product create(String name, BigDecimal price) {
         validateName(name);  // Programmatic validation
         return new Product(null, name, price);
     }
-    
+
     // Factory method for reconstitution from persistence
     public static Product reconstitute(ProductId id, String name, BigDecimal price) {
         return new Product(id, name, price);
     }
-    
+
     // Domain behavior methods
     public void updatePrice(BigDecimal newPrice) {
         validatePrice(newPrice);
         this.price = newPrice;
     }
-    
+
     // Private validation methods
     private static void validateName(String name) {
         if (name == null || name.isBlank()) {
@@ -98,10 +104,10 @@ public class ProductJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    
+
     @Column(name = "NAME", nullable = false)
     private String name;
-    
+
     // Getters and setters for JPA
 }
 ```
@@ -109,6 +115,7 @@ public class ProductJpaEntity {
 ### Port Interfaces
 
 **Input Ports** (use cases) define what the application can do:
+
 ```java
 public interface ProductUseCase {
     Product createProduct(CreateProductCommand command);
@@ -117,6 +124,7 @@ public interface ProductUseCase {
 ```
 
 **Output Ports** (repositories) define what the domain needs from infrastructure:
+
 ```java
 public interface ProductRepository {
     Product save(Product product);
@@ -133,12 +141,13 @@ public interface ProductRepository {
 This project uses **maximum TypeScript strictness**. Never use `any`.
 
 #### ❌ FORBIDDEN Patterns:
+
 ```typescript
 // Never use 'any'
-const data: any = response;  // ❌
+const data: any = response; // ❌
 
 // Never use type assertions to bypass checks
-const user = data as User;  // ❌ (without validation)
+const user = data as User; // ❌ (without validation)
 
 // Never ignore TypeScript errors
 // @ts-ignore  // ❌
@@ -146,6 +155,7 @@ const user = data as User;  // ❌ (without validation)
 ```
 
 #### ✅ REQUIRED Patterns:
+
 ```typescript
 // Use proper type definitions
 interface IProduct {
@@ -161,12 +171,7 @@ function calculateTotal(items: IProduct[]): number {
 
 // Use type guards for runtime validation
 function isProduct(data: unknown): data is IProduct {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'id' in data &&
-    'name' in data
-  );
+  return typeof data === "object" && data !== null && "id" in data && "name" in data;
 }
 ```
 
@@ -176,28 +181,29 @@ Always use **Redux Toolkit** patterns:
 
 ```typescript
 // ✅ CORRECT: Using createSlice
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-export const fetchProducts = createAsyncThunk(
-  'products/fetchAll',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await productApi.getAll();
-    } catch (error) {
-      return rejectWithValue('Failed to fetch products');
-    }
+export const fetchProducts = createAsyncThunk("products/fetchAll", async (_, { rejectWithValue }) => {
+  try {
+    return await productApi.getAll();
+  } catch (error) {
+    return rejectWithValue("Failed to fetch products");
   }
-);
+});
 
 const productSlice = createSlice({
-  name: 'products',
+  name: "products",
   initialState,
   reducers: {
-    clearError: (state) => { state.error = null; },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProducts.pending, (state) => { state.loading = true; })
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.items = action.payload;
         state.loading = false;
@@ -250,27 +256,27 @@ class ProductServiceTest {
     @Nested
     @DisplayName("When creating a product")
     class CreateProduct {
-        
+
         @Test
         @DisplayName("should create product with valid data")
         void shouldCreateProduct() {
             // Given
             var command = new CreateProductCommand("Widget", "SKU-001", BigDecimal.TEN);
-            
+
             // When
             var result = productService.createProduct(command);
-            
+
             // Then
             assertThat(result.getName()).isEqualTo("Widget");
             verify(productRepository).save(any(Product.class));
         }
-        
+
         @Test
         @DisplayName("should reject duplicate SKU")
         void shouldRejectDuplicateSku() {
             // Given
             when(productRepository.existsBySku("SKU-001")).thenReturn(true);
-            
+
             // When/Then
             assertThatThrownBy(() -> productService.createProduct(command))
                 .isInstanceOf(ProductSkuAlreadyExistsException.class);
@@ -282,20 +288,20 @@ class ProductServiceTest {
 ### Frontend Test Structure (Cypress)
 
 ```typescript
-describe('Product Management', () => {
+describe("Product Management", () => {
   beforeEach(() => {
-    cy.intercept('GET', '/api/v1/products', { fixture: 'products.json' });
-    cy.visit('/products');
+    cy.intercept("GET", "/api/v1/products", { fixture: "products.json" });
+    cy.visit("/products");
   });
 
-  it('should display product list', () => {
-    cy.get('[data-testid="product-list"]').should('be.visible');
-    cy.get('[data-testid="product-card"]').should('have.length.greaterThan', 0);
+  it("should display product list", () => {
+    cy.get('[data-testid="product-list"]').should("be.visible");
+    cy.get('[data-testid="product-card"]').should("have.length.greaterThan", 0);
   });
 
-  it('should open create modal when clicking add button', () => {
+  it("should open create modal when clicking add button", () => {
     cy.get('[data-testid="add-product-btn"]').click();
-    cy.get('[data-testid="product-form-modal"]').should('be.visible');
+    cy.get('[data-testid="product-form-modal"]').should("be.visible");
   });
 });
 ```
@@ -306,23 +312,23 @@ describe('Product Management', () => {
 
 ### Java Naming Conventions
 
-| Element | Convention | Example |
-|---------|------------|---------|
-| Classes | PascalCase | `ProductService` |
-| Interfaces | PascalCase | `ProductRepository` |
-| Methods | camelCase | `findById()` |
-| Constants | UPPER_SNAKE | `MAX_RETRY_COUNT` |
-| Packages | lowercase | `com.autoflex.domain` |
+| Element    | Convention  | Example               |
+| ---------- | ----------- | --------------------- |
+| Classes    | PascalCase  | `ProductService`      |
+| Interfaces | PascalCase  | `ProductRepository`   |
+| Methods    | camelCase   | `findById()`          |
+| Constants  | UPPER_SNAKE | `MAX_RETRY_COUNT`     |
+| Packages   | lowercase   | `com.autoflex.domain` |
 
 ### TypeScript Naming Conventions
 
-| Element | Convention | Example |
-|---------|------------|---------|
-| Interfaces | `I` prefix + PascalCase | `IProduct` |
-| Types | PascalCase | `ProductState` |
-| Components | PascalCase | `ProductCard` |
-| Hooks | `use` prefix | `useProducts` |
-| Constants | UPPER_SNAKE | `API_BASE_URL` |
+| Element    | Convention              | Example        |
+| ---------- | ----------------------- | -------------- |
+| Interfaces | `I` prefix + PascalCase | `IProduct`     |
+| Types      | PascalCase              | `ProductState` |
+| Components | PascalCase              | `ProductCard`  |
+| Hooks      | `use` prefix            | `useProducts`  |
+| Constants  | UPPER_SNAKE             | `API_BASE_URL` |
 
 ---
 
@@ -381,6 +387,7 @@ function ProductCard({ product, discount }) {
 ### When Unsure About Requirements:
 
 Ask questions like:
+
 - "Should this validation happen in the domain entity or at the API layer?"
 - "What should happen if this operation fails?"
 - "Are there any edge cases I should consider?"
@@ -388,6 +395,7 @@ Ask questions like:
 ### When Reviewing Code:
 
 Check for:
+
 - [ ] Domain objects are annotation-free
 - [ ] TypeScript has no `any` types
 - [ ] All functions have explicit return types
@@ -406,4 +414,4 @@ Check for:
 
 ---
 
-*Last updated: February 2026*
+_Last updated: February 2026_
