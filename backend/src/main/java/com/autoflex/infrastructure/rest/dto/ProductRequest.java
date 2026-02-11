@@ -15,7 +15,8 @@ import jakarta.validation.constraints.Size;
 /**
  * ProductRequest - DTO for product creation and update requests.
  *
- * <p>This DTO handles API validation concerns separately from domain validation.
+ * <p>
+ * This DTO handles API validation concerns separately from domain validation.
  * The domain entity performs its own validation to maintain invariants.
  */
 @Schema(name = "ProductRequest", description = "Request body for creating or updating a product")

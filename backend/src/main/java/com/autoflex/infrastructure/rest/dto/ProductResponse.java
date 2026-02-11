@@ -2,13 +2,15 @@ package com.autoflex.infrastructure.rest.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * ProductResponse - DTO for product API responses.
  *
- * <p>This DTO is tailored for API consumers and may differ from the domain model.
+ * <p>
+ * This DTO is tailored for API consumers and may differ from the domain model.
  * It includes only the data needed by the frontend/clients.
  */
 @Schema(name = "ProductResponse", description = "Product information returned by the API")
@@ -40,6 +42,9 @@ public class ProductResponse {
 
     @Schema(description = "Last update timestamp")
     private LocalDateTime updatedAt;
+
+    @Schema(description = "Bill of materials (raw material requirements)")
+    private List<BillOfMaterialItemResponse> materials;
 
     // Builder pattern for clean construction
 
@@ -95,6 +100,11 @@ public class ProductResponse {
             return this;
         }
 
+        public Builder materials(List<BillOfMaterialItemResponse> materials) {
+            response.materials = materials;
+            return this;
+        }
+
         public ProductResponse build() {
             return response;
         }
@@ -136,5 +146,9 @@ public class ProductResponse {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<BillOfMaterialItemResponse> getMaterials() {
+        return materials;
     }
 }
